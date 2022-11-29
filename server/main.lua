@@ -5,10 +5,13 @@ local Bail = {}
 RegisterNetEvent('qb-tow:server:DoBail', function(bool, vehInfo)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
+
     if bool then
         if Player.PlayerData.money.cash >= Config.BailPrice then
             Bail[Player.PlayerData.citizenid] = Config.BailPrice
+
             Player.Functions.RemoveMoney('cash', Config.BailPrice, "tow-paid-bail")
+
             TriggerClientEvent('QBCore:Notify', src, Lang:t("success.paid_with_cash", {value = Config.BailPrice}), 'success')
             TriggerClientEvent('qb-tow:client:SpawnVehicle', src, vehInfo)
         elseif Player.PlayerData.money.bank >= Config.BailPrice then
@@ -20,9 +23,11 @@ RegisterNetEvent('qb-tow:server:DoBail', function(bool, vehInfo)
             TriggerClientEvent('QBCore:Notify', src, Lang:t("error.no_deposit", {value = Config.BailPrice}), 'error')
         end
     else
-        if Bail[Player.PlayerData.citizenid] ~= nil then
+        if Bail[Player.PlayerData.citizenid] then
             Player.Functions.AddMoney('bank', Bail[Player.PlayerData.citizenid], "tow-bail-paid")
+
             Bail[Player.PlayerData.citizenid] = nil
+
             TriggerClientEvent('QBCore:Notify', src, Lang:t("success.refund_to_cash", {value = Config.BailPrice}), 'success')
         end
     end
@@ -32,14 +37,17 @@ RegisterNetEvent('qb-tow:server:nano', function(vehNetID)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
     local targetVehicle = NetworkGetEntityFromNetworkId(vehNetID)
-    if not Player then return end
+
+    if not Player then
+        return
+    end
 
     local playerPed = GetPlayerPed(src)
     local playerVehicle = GetVehiclePedIsIn(playerPed, true)
     local playerVehicleCoords = GetEntityCoords(playerVehicle)
     local targetVehicleCoords = GetEntityCoords(targetVehicle)
     local dist = #(playerVehicleCoords - targetVehicleCoords)
-    
+
     if Player.PlayerData.job.name ~= "tow" or dist > 11.0 then
         return DropPlayer(src, Lang:t("info.skick"))
     end
@@ -55,7 +63,9 @@ RegisterNetEvent('qb-tow:server:11101110', function(drops)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
 
-    if not Player then return end
+    if not Player then
+        return
+    end
 
     local playerPed = GetPlayerPed(src)
     local playerCoords = GetEntityCoords(playerPed)

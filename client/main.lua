@@ -253,7 +253,7 @@ end)
 
 RegisterNetEvent('jobs:client:ToggleNpc', function()
     if QBCore.Functions.GetPlayerData().job.name == "tow" then
-        if CurrentTow ~= nil then
+        if CurrentTow then
             QBCore.Functions.Notify(Lang:t("error.finish_work"), "error")
             return
         end
@@ -293,7 +293,7 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
     local vehicle = GetVehiclePedIsIn(cache.ped, true)
 
     if isTowVehicle(vehicle) then
-        if CurrentTow == nil then
+        if not CurrentTow then
             local coordA = GetEntityCoords(cache.ped, 1)
             local coordB = GetOffsetFromEntityInWorldCoords(cache.ped, 0.0, 5.0, 0.0)
             local targetVehicle = getVehicleInDirection(coordA, coordB)
