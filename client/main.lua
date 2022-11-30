@@ -105,7 +105,7 @@ local function CreateZone(type, number)
     end
 
     if Config.UseTarget and type == "main" then
-        zoneCombo = exports.ox_target:addBoxZone({
+        exports.ox_target:addBoxZone({
             coords = coords,
             size = size,
             rotation = heading,
@@ -119,7 +119,7 @@ local function CreateZone(type, number)
             }
         })
     else
-        zoneCombo = lib.zones.box({
+        local zoneCombo = lib.zones.box({
             coords = coords,
             size = size,
             rotation = heading,
@@ -271,7 +271,7 @@ RegisterNetEvent('jobs:client:ToggleNpc', function()
 
             CreateZone("towspots", randomLocation)
 
-            CurrentBlip = AddBlipForCoord(CurrentLocation.x, CurrentLocation.y, CurrentLocation.z)
+            CurrentBlip = AddBlipForCoord(CurrentLocation.x, CurrentLocation.y, CurrentLocation.z)CurrentLocation
 
             SetBlipColour(CurrentBlip, 3)
             SetBlipRoute(CurrentBlip, true)
