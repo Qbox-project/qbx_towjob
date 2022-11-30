@@ -271,7 +271,7 @@ RegisterNetEvent('jobs:client:ToggleNpc', function()
 
             CreateZone("towspots", randomLocation)
 
-            CurrentBlip = AddBlipForCoord(CurrentLocation.x, CurrentLocation.y, CurrentLocation.z)CurrentLocation
+            CurrentBlip = AddBlipForCoord(CurrentLocation.x, CurrentLocation.y, CurrentLocation.z)
 
             SetBlipColour(CurrentBlip, 3)
             SetBlipRoute(CurrentBlip, true)
