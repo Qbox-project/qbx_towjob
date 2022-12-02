@@ -14,12 +14,12 @@ local drawDropOff = false
 
 -- Functions
 local function getRandomVehicleLocation()
-    local randomVehicle = math.random(1, #Config.Locations["towspots"])
+    local randomVehicle = math.random(1, #Config.Locations.towspots)
 
     while randomVehicle == LastVehicle do
         Wait(10)
 
-        randomVehicle = math.random(1, #Config.Locations["towspots"])
+        randomVehicle = math.random(1, #Config.Locations.towspots)
     end
 
     return randomVehicle
@@ -28,7 +28,7 @@ end
 local function drawDropOffMarker()
     CreateThread(function()
         while drawDropOff do
-            DrawMarker(2, Config.Locations["dropoff"].coords.x, Config.Locations["dropoff"].coords.y, Config.Locations["dropoff"].coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 200, 0, 0, 222, false, false, false, true, false, false, false)
+            DrawMarker(2, Config.Locations.dropoff.coords.x, Config.Locations.dropoff.coords.y, Config.Locations.dropoff.coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 200, 0, 0, 222, false, false, false, true, false, false, false)
 
             Wait(0)
         end
@@ -36,10 +36,10 @@ local function drawDropOffMarker()
 end
 
 local function getVehicleInDirection(coordFrom, coordTo)
-	local rayHandle = CastRayPointToPoint(coordFrom.x, coordFrom.y, coordFrom.z, coordTo.x, coordTo.y, coordTo.z, 10, cache.ped, 0)
-	local _, _, _, _, vehicle = GetRaycastResult(rayHandle)
+    local rayHandle = CastRayPointToPoint(coordFrom.x, coordFrom.y, coordFrom.z, coordTo.x, coordTo.y, coordTo.z, 10, cache.ped, 0)
+    local _, _, _, _, vehicle = GetRaycastResult(rayHandle)
 
-	return vehicle
+    return vehicle
 end
 
 local function isTowVehicle(vehicle)
@@ -80,6 +80,7 @@ local function CreateZone(type, number)
     local event
     local label
     local size
+    local icon
 
     if type == "main" then
         event = "qb-tow:client:PaySlip"
@@ -88,6 +89,7 @@ local function CreateZone(type, number)
         heading = Config.Locations[type].coords.h
         boxName = type
         size = vec3(3, 3, 3)
+        icon = "fa-solid fa-receipt"
     elseif type == "vehicle" then
         event = "qb-tow:client:Vehicle"
         label = Lang:t("label.vehicle")
@@ -95,6 +97,7 @@ local function CreateZone(type, number)
         heading = Config.Locations[type].coords.h
         boxName = type
         size = vec3(5, 5, 5)
+        icon = "fa-solid fa-car"
     elseif type == "towspots" then
         event = "qb-tow:client:SpawnNPCVehicle"
         label = Lang:t("label.npcz")
@@ -102,6 +105,7 @@ local function CreateZone(type, number)
         heading = Config.Locations[type][number].coords.h
         boxName = Config.Locations[type][number].name
         size = vec3(50, 50, 50)
+        icon = "fa-solid fa-car"
     end
 
     if Config.UseTarget and type == "main" then
@@ -113,6 +117,7 @@ local function CreateZone(type, number)
                 {
                     name = 'qb-towjob:' .. boxName,
                     event = event,
+                    icon = icon,
                     label = label,
                     distance = 2.0
                 }
@@ -164,10 +169,10 @@ local function deliverVehicle(vehicle)
 
     local randomLocation = getRandomVehicleLocation()
 
-    CurrentLocation.x = Config.Locations["towspots"][randomLocation].coords.x
-    CurrentLocation.y = Config.Locations["towspots"][randomLocation].coords.y
-    CurrentLocation.z = Config.Locations["towspots"][randomLocation].coords.z
-    CurrentLocation.model = Config.Locations["towspots"][randomLocation].model
+    CurrentLocation.x = Config.Locations.towspots[randomLocation].coords.x
+    CurrentLocation.y = Config.Locations.towspots[randomLocation].coords.y
+    CurrentLocation.z = Config.Locations.towspots[randomLocation].coords.z
+    CurrentLocation.model = Config.Locations.towspots[randomLocation].model
     CurrentLocation.id = randomLocation
 
     CreateZone("towspots", randomLocation)
@@ -180,7 +185,7 @@ local function deliverVehicle(vehicle)
 end
 
 local function CreateElements()
-    local TowBlip = AddBlipForCoord(Config.Locations["main"].coords.x, Config.Locations["main"].coords.y, Config.Locations["main"].coords.z)
+    local TowBlip = AddBlipForCoord(Config.Locations.main.coords.x, Config.Locations.main.coords.y, Config.Locations.main.coords.z)
 
     SetBlipSprite(TowBlip, 477)
     SetBlipDisplay(TowBlip, 4)
@@ -189,10 +194,10 @@ local function CreateElements()
     SetBlipColour(TowBlip, 15)
 
     BeginTextCommandSetBlipName("STRING")
-    AddTextComponentSubstringPlayerName(Config.Locations["main"].label)
+    AddTextComponentSubstringPlayerName(Config.Locations.main.label)
     EndTextCommandSetBlipName(TowBlip)
 
-    local TowVehBlip = AddBlipForCoord(Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z)
+    local TowVehBlip = AddBlipForCoord(Config.Locations.vehicle.coords.x, Config.Locations.vehicle.coords.y, Config.Locations.vehicle.coords.z)
 
     SetBlipSprite(TowVehBlip, 326)
     SetBlipDisplay(TowVehBlip, 4)
@@ -201,7 +206,7 @@ local function CreateElements()
     SetBlipColour(TowVehBlip, 15)
 
     BeginTextCommandSetBlipName("STRING")
-    AddTextComponentSubstringPlayerName(Config.Locations["vehicle"].label)
+    AddTextComponentSubstringPlayerName(Config.Locations.vehicle.label)
     EndTextCommandSetBlipName(TowVehBlip)
 
     CreateZone("main")
@@ -211,7 +216,7 @@ end
 -- Events
 RegisterNetEvent('qb-tow:client:SpawnVehicle', function()
     local vehicleInfo = selectedVeh
-    local coords = Config.Locations["vehicle"].coords
+    local coords = Config.Locations.vehicle.coords
 
     QBCore.Functions.TriggerCallback('QBCore:Server:SpawnVehicle', function(netId)
         local veh = NetToVeh(netId)
@@ -263,10 +268,10 @@ RegisterNetEvent('jobs:client:ToggleNpc', function()
         if NpcOn then
             local randomLocation = getRandomVehicleLocation()
 
-            CurrentLocation.x = Config.Locations["towspots"][randomLocation].coords.x
-            CurrentLocation.y = Config.Locations["towspots"][randomLocation].coords.y
-            CurrentLocation.z = Config.Locations["towspots"][randomLocation].coords.z
-            CurrentLocation.model = Config.Locations["towspots"][randomLocation].model
+            CurrentLocation.x = Config.Locations.towspots[randomLocation].coords.x
+            CurrentLocation.y = Config.Locations.towspots[randomLocation].coords.y
+            CurrentLocation.z = Config.Locations.towspots[randomLocation].coords.z
+            CurrentLocation.model = Config.Locations.towspots[randomLocation].model
             CurrentLocation.id = randomLocation
 
             CreateZone("towspots", randomLocation)
@@ -311,16 +316,22 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                     local targetPos = GetEntityCoords(targetVehicle)
 
                     if #(towPos - targetPos) < 11.0 then
-                        QBCore.Functions.Progressbar("towing_vehicle", Lang:t("mission.towing_vehicle"), 5000, false, true, {
-                            disableMovement = true,
-                            disableCarMovement = true,
-                            disableMouse = false,
-                            disableCombat = true
-                        }, {
-                            animDict = "mini@repair",
-                            anim = "fixing_a_ped",
-                            flags = 16
-                        }, {}, {}, function() -- Done
+                        if lib.progressBar({
+                            duration = 5000,
+                            label = Lang:t("mission.towing_vehicle"),
+                            useWhileDead = false,
+                            canCancel = true,
+                            disable = {
+                                move = true,
+                                car = true,
+                                combat = true
+                            },
+                            anim = {
+                                dict = 'mini@repair',
+                                clip = 'fixing_a_ped',
+                                flag = 16
+                            }
+                        }) then
                             StopAnimTask(cache.ped, "mini@repair", "fixing_a_ped", 1.0)
                             AttachEntityToEntity(targetVehicle, vehicle, GetEntityBoneIndexByName(vehicle, 'bodyshell'), 0.0, -1.5 + -0.85, 0.0 + 1.15, 0, 0, 0, 1, 1, 0, 1, 0, 1)
                             FreezeEntityPosition(targetVehicle, true)
@@ -332,7 +343,7 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
 
                                 QBCore.Functions.Notify(Lang:t("mission.goto_depot"), "primary", 5000)
 
-                                CurrentBlip2 = AddBlipForCoord(Config.Locations["dropoff"].coords.x, Config.Locations["dropoff"].coords.y, Config.Locations["dropoff"].coords.z)
+                                CurrentBlip2 = AddBlipForCoord(Config.Locations.dropoff.coords.x, Config.Locations.dropoff.coords.y, Config.Locations.dropoff.coords.z)
 
                                 SetBlipColour(CurrentBlip2, 3)
                                 SetBlipRoute(CurrentBlip2, true)
@@ -351,25 +362,31 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                             end
 
                             QBCore.Functions.Notify(Lang:t("mission.vehicle_towed"), "success")
-                        end, function() -- Cancel
+                        else
                             StopAnimTask(cache.ped, "mini@repair", "fixing_a_ped", 1.0)
 
                             QBCore.Functions.Notify(Lang:t("error.failed"), "error")
-                        end)
+                        end
                     end
                 end
             end
         else
-            QBCore.Functions.Progressbar("untowing_vehicle", Lang:t("mission.untowing_vehicle"), 5000, false, true, {
-                disableMovement = true,
-                disableCarMovement = true,
-                disableMouse = false,
-                disableCombat = true
-            }, {
-                animDict = "mini@repair",
-                anim = "fixing_a_ped",
-                flags = 16
-            }, {}, {}, function() -- Done
+            if lib.progressBar({
+                duration = 5000,
+                label = Lang:t("mission.untowing_vehicle"),
+                useWhileDead = false,
+                canCancel = true,
+                disable = {
+                    move = true,
+                    car = true,
+                    combat = true
+                },
+                anim = {
+                    dict = 'mini@repair',
+                    clip = 'fixing_a_ped',
+                    flag = 16
+                }
+            }) then
                 StopAnimTask(cache.ped, "mini@repair", "fixing_a_ped", 1.0)
                 FreezeEntityPosition(CurrentTow, false)
 
@@ -381,7 +398,7 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                 if NpcOn then
                     local targetPos = GetEntityCoords(CurrentTow)
 
-                    if #(targetPos - vec3(Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z)) < 25.0 then
+                    if #(targetPos - vec3(Config.Locations.vehicle.coords.x, Config.Locations.vehicle.coords.y, Config.Locations.vehicle.coords.z)) < 25.0 then
                         deliverVehicle(CurrentTow)
                     end
                 end
@@ -392,11 +409,11 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                 drawDropOff = false
 
                 QBCore.Functions.Notify(Lang:t("mission.vehicle_takenoff"), "success")
-            end, function() -- Cancel
+            else
                 StopAnimTask(cache.ped, "mini@repair", "fixing_a_ped", 1.0)
 
                 QBCore.Functions.Notify(Lang:t("error.failed"), "error")
-            end)
+            end
         end
     else
         QBCore.Functions.Notify(Lang:t("error.not_towing_vehicle"), "error")
@@ -404,7 +421,7 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
 end)
 
 RegisterNetEvent('qb-tow:client:TakeOutVehicle', function(data)
-    local coords = Config.Locations["vehicle"].coords
+    local coords = Config.Locations.vehicle.coords
 
     coords = vec3(coords.x, coords.y, coords.z)
 
@@ -472,7 +489,7 @@ end)
 CreateThread(function()
     while true do
         if showMarker then
-            DrawMarker(2, Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 200, 0, 0, 222, false, false, false, true, false, false, false)
+            DrawMarker(2, Config.Locations.vehicle.coords.x, Config.Locations.vehicle.coords.y, Config.Locations.vehicle.coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 200, 0, 0, 222, false, false, false, true, false, false, false)
 
             Wait(0)
         else

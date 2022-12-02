@@ -70,7 +70,7 @@ RegisterNetEvent('qb-tow:server:11101110', function(drops)
     local playerPed = GetPlayerPed(src)
     local playerCoords = GetEntityCoords(playerPed)
 
-    if Player.PlayerData.job.name ~= "tow" or #(playerCoords - vec3(Config.Locations["main"].coords.x, Config.Locations["main"].coords.y, Config.Locations["main"].coords.z)) > 6.0 then
+    if Player.PlayerData.job.name ~= "tow" or #(playerCoords - Config.Locations.main.coords) > 6.0 then
         return DropPlayer(src, Lang:t("info.skick"))
     end
 
@@ -100,7 +100,7 @@ RegisterNetEvent('qb-tow:server:11101110', function(drops)
 end)
 
 QBCore.Commands.Add("npc", Lang:t("info.toggle_npc"), {}, false, function(source)
-	TriggerClientEvent("jobs:client:ToggleNpc", source)
+    TriggerClientEvent("jobs:client:ToggleNpc", source)
 end)
 
 QBCore.Commands.Add("tow", Lang:t("info.tow"), {}, false, function(source)
