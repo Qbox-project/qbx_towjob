@@ -11,12 +11,12 @@ RegisterNetEvent('qb-tow:server:DoBail', function(bool, vehInfo)
         if not Bail[Player.PlayerData.citizenid] then return end
         Player.Functions.AddMoney('bank', Bail[Player.PlayerData.citizenid], "tow-bail-paid")
         Bail[Player.PlayerData.citizenid] = nil
-        TriggerClientEvent('QBCore:Notify', src, Lang:t("success.refund_to_cash", { value = Config.BailPrice }), 'success')
+        TriggerClientEvent('ox_lib:notify', src, {description = Lang:t("success.refund_to_cash", { value = Config.BailPrice }), type = 'success'})
         return
     end
 
     if Player.PlayerData.money.cash < Config.BailPrice or Player.PlayerData.money.bank < Config.BailPrice then
-        TriggerClientEvent('QBCore:Notify', src, Lang:t("error.no_deposit", { value = Config.BailPrice }), 'error')
+        TriggerClientEvent('ox_lib:notify', src, {description = Lang:t("error.no_deposit", { value = Config.BailPrice }), type = 'error'})
         return
     end
     
@@ -28,7 +28,7 @@ RegisterNetEvent('qb-tow:server:DoBail', function(bool, vehInfo)
 
     Bail[Player.PlayerData.citizenid] = Config.BailPrice
     Player.Functions.RemoveMoney(paymentMethod, Config.BailPrice, "tow-paid-bail")
-    TriggerClientEvent('QBCore:Notify', src, Lang:t("success.paid_with_" .. paymentMethod, { value = Config.BailPrice }), 'success')
+    TriggerClientEvent('ox_lib:notify', src, {description = Lang:t("success.paid_with_" .. paymentMethod, { value = Config.BailPrice }), type = 'success'})
     TriggerClientEvent('qb-tow:client:SpawnVehicle', src, vehInfo)
 end)
 
@@ -76,7 +76,7 @@ RegisterNetEvent('qb-tow:server:11101110', function(drops)
 
     Player.Functions.AddJobReputation(1)
     Player.Functions.AddMoney("bank", payment, "tow-salary")
-    TriggerClientEvent('QBCore:Notify', src, Lang:t("success.you_earned", { value = payment }), 'success')
+    TriggerClientEvent('ox_lib:notify', src, {description = Lang:t("success.you_earned", { value = payment }), type = 'success'})
 end)
 
 QBCore.Commands.Add("npc", Lang:t("info.toggle_npc"), {}, false, function(source)
