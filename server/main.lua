@@ -19,7 +19,7 @@ RegisterNetEvent('qb-tow:server:DoBail', function(bool, vehInfo)
         TriggerClientEvent('ox_lib:notify', src, {description = Lang:t("error.no_deposit", { value = Config.BailPrice }), type = 'error'})
         return
     end
-    
+
     if Player.PlayerData.money.cash >= Config.BailPrice then
         paymentMethod = 'cash'
     else
@@ -87,4 +87,14 @@ QBCore.Commands.Add("tow", Lang:t("info.tow"), {}, false, function(source)
     local Player = QBCore.Functions.GetPlayer(source)
     if Player.PlayerData.job.name ~= "tow" and Player.PlayerData.job.name ~= "mechanic" then return end
     TriggerClientEvent("qb-tow:client:TowVehicle", source)
+end)
+
+lib.callback.register('qb-tow:server:spawnVehicle', function(source, model, coords, plate, warp)
+    local netId = QBCore.Functions.CreateVehicle(source, model, coords, warp)
+    if not netId or netId == 0 then return end
+    local veh = NetworkGetEntityFromNetworkId(netId)
+    if not veh or veh == 0 then return end
+    if plate then SetVehicleNumberPlateText(veh, plate) end
+    TriggerClientEvent('vehiclekeys:client:SetOwner', source, plate or QBCore.Functions.GetPlate(veh))
+    return netId
 end)
