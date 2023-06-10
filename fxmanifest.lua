@@ -1,8 +1,8 @@
 fx_version 'cerulean'
 game 'gta5'
 
-description 'QB-TowJob'
-version '1.1.0'
+description 'QBX-TowJob'
+version '1.0.0'
 
 shared_scripts {
 	'@ox_lib/init.lua',
@@ -15,9 +15,11 @@ client_scripts {
 	'@PolyZone/client.lua',
 	'@PolyZone/BoxZone.lua',
 	'@PolyZone/ComboZone.lua',
-    'client/main.lua'
+	'client/main.lua'
 }
 
 server_script 'server/main.lua'
 
+provide 'qb-towjob'
 lua54 'yes'
+use_experimental_fxv2_oal 'yes'
