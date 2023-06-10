@@ -16,7 +16,7 @@ local drawDropOff = false
 
 local function getRandomVehicleLocation()
     local randomVehicle = math.random(1, #Config.Locations["towspots"])
-    while (randomVehicle == LastVehicle) do
+    while randomVehicle == LastVehicle do
         Wait(10)
         randomVehicle = math.random(1, #Config.Locations["towspots"])
     end
@@ -26,14 +26,14 @@ end
 local function drawDropOffMarker()
     CreateThread(function()
         while drawDropOff do
-            DrawMarker(2, Config.Locations["dropoff"].coords.x, Config.Locations["dropoff"].coords.y, Config.Locations["dropoff"].coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 200, 0, 0, 222, false, false, false, true, false, false, false)
+            DrawMarker(2, Config.Locations["dropoff"].coords.x, Config.Locations["dropoff"].coords.y, Config.Locations["dropoff"].coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 200, 0, 0, 222, false, false, 0, true, false, false, false)
             Wait(0)
         end
     end)
 end
 
 local function getVehicleInDirection(coordFrom, coordTo)
-	local rayHandle = CastRayPointToPoint(coordFrom.x, coordFrom.y, coordFrom.z, coordTo.x, coordTo.y, coordTo.z, 10, PlayerPedId(), 0)
+	local rayHandle = CastRayPointToPoint(coordFrom.x, coordFrom.y, coordFrom.z, coordTo.x, coordTo.y, coordTo.z, 10, cache.ped, 0)
 	local _, _, _, _, vehicle = GetRaycastResult(rayHandle)
 	return vehicle
 end
@@ -57,7 +57,7 @@ local function MenuGarage()
         }
     }
     for k in pairs(Config.Vehicles) do
-        towMenu[#towMenu+1] = {
+        towMenu[#towMenu + 1] = {
             header = Config.Vehicles[k],
             params = {
                 event = "qb-tow:client:TakeOutVehicle",
@@ -68,7 +68,7 @@ local function MenuGarage()
         }
     end
 
-    towMenu[#towMenu+1] = {
+    towMenu[#towMenu + 1] = {
         header = Lang:t("menu.close_menu"),
         txt = "",
         params = {
@@ -94,23 +94,23 @@ local function CreateZone(type, number)
     if type == "main" then
         event = "qb-tow:client:PaySlip"
         label = Lang:t("label.payslip")
-        coords = vector3(Config.Locations[type].coords.x, Config.Locations[type].coords.y, Config.Locations[type].coords.z)
-        heading = Config.Locations[type].coords.h
-        boxName = Config.Locations[type].label
+        coords = Config.Locations["main"].coords.xyz
+        heading = Config.Locations["main"].coords.w
+        boxName = Config.Locations["main"].label
         size = 3
     elseif type == "vehicle" then
         event = "qb-tow:client:Vehicle"
         label = Lang:t("label.vehicle")
-        coords = vector3(Config.Locations[type].coords.x, Config.Locations[type].coords.y, Config.Locations[type].coords.z)
-        heading = Config.Locations[type].coords.h
-        boxName = Config.Locations[type].label
+        coords = Config.Locations["vehicle"].coords.xyz
+        heading = Config.Locations["vehicle"].coords.w
+        boxName = Config.Locations["vehicle"].label
         size = 5
     elseif type == "towspots" then
         event = "qb-tow:client:SpawnNPCVehicle"
         label = Lang:t("label.npcz")
-        coords = vector3(Config.Locations[type][number].coords.x, Config.Locations[type][number].coords.y, Config.Locations[type][number].coords.z)
-        heading = Config.Locations[type][number].coords.h
-        boxName = Config.Locations[type][number].name
+        coords = Config.Locations[type][number].coords.xyz
+        heading = Config.Locations["towspots"][number].coords.w --[[@as number?]]
+        boxName = Config.Locations["towspots"][number].name
         size = 50
     end
 
@@ -180,7 +180,7 @@ end
 local function deliverVehicle(vehicle)
     DeleteVehicle(vehicle)
     RemoveBlip(CurrentBlip2)
-    JobsDone = JobsDone + 1
+    JobsDone += 1
     VehicleSpawned = false
     QBCore.Functions.Notify(Lang:t("mission.delivered_vehicle"), "success")
     QBCore.Functions.Notify(Lang:t("mission.get_new_vehicle"))
@@ -228,20 +228,13 @@ end
 RegisterNetEvent('qb-tow:client:SpawnVehicle', function()
     local vehicleInfo = selectedVeh
     local coords = Config.Locations["vehicle"].coords
-    QBCore.Functions.TriggerCallback('QBCore:Server:SpawnVehicle', function(netId)
-        local veh = NetToVeh(netId)
-        SetVehicleNumberPlateText(veh, "TOWR"..tostring(math.random(1000, 9999)))
-        SetEntityHeading(veh, coords.w)
-        exports['LegacyFuel']:SetFuel(veh, 100.0)
-        SetEntityAsMissionEntity(veh, true, true)
-        CloseMenuFull()
-        TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
-        TriggerEvent("vehiclekeys:client:SetOwner", QBCore.Functions.GetPlate(veh))
-        SetVehicleEngineOn(veh, true, true)
-        for i = 1, 9, 1 do
-            SetVehicleExtra(veh, i, 0)
-        end
-    end, vehicleInfo, coords, false)
+    local netId = lib.callback.await('qb-tow:server:spawnVehicle', false, vehicleInfo, coords, "TOWR"..tostring(math.random(1000, 9999)), true)
+    local veh = NetToVeh(netId)
+    CloseMenuFull()
+    SetVehicleEngineOn(veh, true, true, false)
+    for i = 1, 9, 1 do
+        SetVehicleExtra(veh, i, false)
+    end
 end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
@@ -262,7 +255,7 @@ end)
 
 RegisterNetEvent('jobs:client:ToggleNpc', function()
     if QBCore.Functions.GetPlayerData().job.name == "tow" then
-        if CurrentTow ~= nil then
+        if CurrentTow then
             QBCore.Functions.Notify(Lang:t("error.finish_work"), "error")
             return
         end
@@ -292,12 +285,11 @@ RegisterNetEvent('jobs:client:ToggleNpc', function()
 end)
 
 RegisterNetEvent('qb-tow:client:TowVehicle', function()
-    local vehicle = GetVehiclePedIsIn(PlayerPedId(), true)
+    local vehicle = cache.vehicle
     if isTowVehicle(vehicle) then
-        if CurrentTow == nil then
-            local playerped = PlayerPedId()
-            local coordA = GetEntityCoords(playerped, 1)
-            local coordB = GetOffsetFromEntityInWorldCoords(playerped, 0.0, 5.0, 0.0)
+        if not CurrentTow then
+            local coordA = GetEntityCoords(cache.ped)
+            local coordB = GetOffsetFromEntityInWorldCoords(cache.ped, 0.0, 5.0, 0.0)
             local targetVehicle = getVehicleInDirection(coordA, coordB)
 
             if NpcOn and CurrentLocation then
@@ -306,7 +298,7 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                     return
                 end
             end
-            if not IsPedInAnyVehicle(PlayerPedId()) then
+            if not cache.vehicle then
                 if vehicle ~= targetVehicle then
                     local towPos = GetEntityCoords(vehicle)
                     local targetPos = GetEntityCoords(targetVehicle)
@@ -321,8 +313,8 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                             anim = "fixing_a_ped",
                             flags = 16,
                         }, {}, {}, function() -- Done
-                            StopAnimTask(PlayerPedId(), "mini@repair", "fixing_a_ped", 1.0)
-                            AttachEntityToEntity(targetVehicle, vehicle, GetEntityBoneIndexByName(vehicle, 'bodyshell'), 0.0, -1.5 + -0.85, 0.0 + 1.15, 0, 0, 0, 1, 1, 0, 1, 0, 1)
+                            StopAnimTask(cache.ped, "mini@repair", "fixing_a_ped", 1.0)
+                            AttachEntityToEntity(targetVehicle, vehicle, GetEntityBoneIndexByName(vehicle, 'bodyshell'), 0.0, -1.5 + -0.85, 0.0 + 1.15, 0, 0, 0, true, true, false, true, 0, true)
                             FreezeEntityPosition(targetVehicle, true)
                             CurrentTow = targetVehicle
                             if NpcOn then
@@ -341,7 +333,7 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                             end
                             QBCore.Functions.Notify(Lang:t("mission.vehicle_towed"), "success")
                         end, function() -- Cancel
-                            StopAnimTask(PlayerPedId(), "mini@repair", "fixing_a_ped", 1.0)
+                            StopAnimTask(cache.ped, "mini@repair", "fixing_a_ped", 1.0)
                             QBCore.Functions.Notify(Lang:t("error.failed"), "error")
                         end)
                     end
@@ -358,7 +350,7 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                 anim = "fixing_a_ped",
                 flags = 16,
             }, {}, {}, function() -- Done
-                StopAnimTask(PlayerPedId(), "mini@repair", "fixing_a_ped", 1.0)
+                StopAnimTask(cache.ped, "mini@repair", "fixing_a_ped", 1.0)
                 FreezeEntityPosition(CurrentTow, false)
                 Wait(250)
                 AttachEntityToEntity(CurrentTow, vehicle, 20, -0.0, -15.0, 1.0, 0.0, 0.0, 0.0, false, false, false, false, 20, true)
@@ -374,7 +366,7 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                 drawDropOff = false
                 QBCore.Functions.Notify(Lang:t("mission.vehicle_takenoff"), "success")
             end, function() -- Cancel
-                StopAnimTask(PlayerPedId(), "mini@repair", "fixing_a_ped", 1.0)
+                StopAnimTask(cache.ped, "mini@repair", "fixing_a_ped", 1.0)
                 QBCore.Functions.Notify(Lang:t("error.failed"), "error")
             end)
         end
@@ -385,10 +377,9 @@ end)
 
 RegisterNetEvent('qb-tow:client:TakeOutVehicle', function(data)
     local coords = Config.Locations["vehicle"].coords
-    coords = vector3(coords.x, coords.y, coords.z)
-    local ped = PlayerPedId()
+    local ped = cache.ped
     local pos = GetEntityCoords(ped)
-    if #(pos - coords) <= 5 then
+    if #(pos - coords.xyz) <= 5 then
         local vehicleInfo = data.vehicle
         TriggerServerEvent('qb-tow:server:DoBail', true, vehicleInfo)
         selectedVeh = vehicleInfo
@@ -398,10 +389,10 @@ RegisterNetEvent('qb-tow:client:TakeOutVehicle', function(data)
 end)
 
 RegisterNetEvent('qb-tow:client:Vehicle', function()
-    local vehicle = GetVehiclePedIsIn(PlayerPedId(), false)
+    local vehicle = cache.vehicle
     if not CurrentTow then
         if vehicle and isTowVehicle(vehicle) then
-            DeleteVehicle(GetVehiclePedIsIn(PlayerPedId()))
+            DeleteVehicle(cache.vehicle)
             TriggerServerEvent('qb-tow:server:DoBail', false)
         else
             MenuGarage()
@@ -423,30 +414,29 @@ RegisterNetEvent('qb-tow:client:PaySlip', function()
 end)
 
 RegisterNetEvent('qb-tow:client:SpawnNPCVehicle', function()
-    if not VehicleSpawned then
-        QBCore.Functions.TriggerCallback('QBCore:Server:SpawnVehicle', function(netId)
-            local veh = NetToVeh(netId)
-            exports['LegacyFuel']:SetFuel(veh, 0.0)
-            VehicleSpawned = true
-        end, CurrentLocation.model, CurrentLocation, false)
-    end
+    if VehicleSpawned then return end
+    local netId = lib.callback.await('qb-tow:server:spawnVehicle', false, CurrentLocation.model, vec3(CurrentLocation.x, CurrentLocation.y, CurrentLocation.z))
+    local veh = NetToVeh(netId)
+    SetVehicleFuelLevel(veh, 0.0)
+    VehicleSpawned = true
 end)
 
 RegisterNetEvent('qb-tow:client:ShowMarker', function(active)
-    if PlayerJob.name == "tow" then
-        showMarker = active
-    end
+    if PlayerJob.name ~= "tow" then return end
+
+    showMarker = active
 end)
 
 -- Threads
+
 CreateThread(function()
+    local sleep = 1000
     while true do
+        sleep = 1000
         if showMarker then
-            DrawMarker(2, Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 200, 0, 0, 222, false, false, false, true, false, false, false)
-            --DrawMarker(2, Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 200, 200, 200, 222, false, false, false, true, false, false, false)
-            Wait(0)
-        else
-            Wait(1000)
+            sleep = 0
+            DrawMarker(2, Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 200, 0, 0, 222, false, false, 0, true, false, false, false)
         end
+        Wait(sleep)
     end
 end)
