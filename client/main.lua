@@ -289,16 +289,15 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
     if isTowVehicle(vehicle) then
         if not CurrentTow then
             local coordA = GetEntityCoords(cache.ped)
-            local coordB = GetOffsetFromEntityInWorldCoords(cache.ped, 0.0, 5.0, 0.0)
+            local coordB = GetOffsetFromEntityInWorldCoords(cache.ped, 0.0, -30.0, 0.0)
             local targetVehicle = getVehicleInDirection(coordA, coordB)
-
             if NpcOn and CurrentLocation then
                 if GetEntityModel(targetVehicle) ~= joaat(CurrentLocation.model) then
                     QBCore.Functions.Notify(Lang:t("error.vehicle_not_correct"), "error")
                     return
                 end
             end
-            if not cache.vehicle then
+            if cache.vehicle then
                 if vehicle ~= targetVehicle then
                     local towPos = GetEntityCoords(vehicle)
                     local targetPos = GetEntityCoords(targetVehicle)
