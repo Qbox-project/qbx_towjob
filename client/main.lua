@@ -297,6 +297,7 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                     return
                 end
             end
+            
             if cache.vehicle then
                 if vehicle ~= targetVehicle then
                     local towPos = GetEntityCoords(vehicle)
