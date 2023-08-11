@@ -43,7 +43,7 @@ RegisterNetEvent('qb-tow:server:nano', function(vehNetID)
     local playerVehicleCoords = GetEntityCoords(playerVehicle)
     local targetVehicleCoords = GetEntityCoords(targetVehicle)
     local dist = #(playerVehicleCoords - targetVehicleCoords)
-    if Player.PlayerData.job.name ~= "tow" or dist > 11.0 then
+    if Player.PlayerData.job.name ~= "tow" or dist > 15.0 then
         return DropPlayer(src, Lang:t("info.skick"))
     end
 
