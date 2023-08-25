@@ -50,37 +50,24 @@ end
 -- Old Menu Code (being removed)
 
 local function MenuGarage()
-    local towMenu = {
-        {
-            header = Lang:t("menu.header"),
-            isMenuHeader = true
-        }
-    }
+    local towMenu = {}
     for k in pairs(Config.Vehicles) do
         towMenu[#towMenu + 1] = {
-            header = Config.Vehicles[k],
-            params = {
-                event = "qb-tow:client:TakeOutVehicle",
-                args = {
-                    vehicle = k
-                }
+            title = Config.Vehicles[k],
+            event = "qb-tow:client:TakeOutVehicle",
+            args = {
+                vehicle = k
             }
         }
     end
 
-    towMenu[#towMenu + 1] = {
-        header = Lang:t("menu.close_menu"),
-        txt = "",
-        params = {
-            event = "qb-menu:client:closeMenu"
-        }
+    lib.registerContext({
+        id = 'tow_veh_menu',
+        title = Lang:t("menu.header"),
+        options = towMenu
+    })
 
-    }
-    exports['qb-menu']:openMenu(towMenu)
-end
-
-local function CloseMenuFull()
-    exports['qb-menu']:closeMenu()
+    lib.showContext('tow_veh_menu')
 end
 
 local function CreateZone(type, number)
@@ -230,7 +217,6 @@ RegisterNetEvent('qb-tow:client:SpawnVehicle', function()
     local coords = Config.Locations["vehicle"].coords
     local netId = lib.callback.await('qb-tow:server:spawnVehicle', false, vehicleInfo, coords, "TOWR"..tostring(math.random(1000, 9999)), true)
     local veh = NetToVeh(netId)
-    CloseMenuFull()
     SetVehicleEngineOn(veh, true, true, false)
     for i = 1, 9, 1 do
         SetVehicleExtra(veh, i, false)
