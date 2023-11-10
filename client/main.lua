@@ -428,7 +428,7 @@ end)
 -- Threads
 
 CreateThread(function()
-    local sleep = 1000
+    local sleep
     while true do
         sleep = 1000
         if showMarker then
