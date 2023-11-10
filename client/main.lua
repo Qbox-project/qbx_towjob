@@ -1,4 +1,3 @@
-local QBCore = exports['qbx-core']:GetCoreObject()
 local PlayerJob = {}
 local JobsDone = 0
 local NpcOn = false
@@ -169,8 +168,8 @@ local function deliverVehicle(vehicle)
     RemoveBlip(CurrentBlip2)
     JobsDone += 1
     VehicleSpawned = false
-    QBCore.Functions.Notify(Lang:t("mission.delivered_vehicle"), "success")
-    QBCore.Functions.Notify(Lang:t("mission.get_new_vehicle"))
+    exports.qbx_core:Notify(Lang:t("mission.delivered_vehicle"), "success")
+    exports.qbx_core:Notify(Lang:t("mission.get_new_vehicle"))
 
     local randomLocation = getRandomVehicleLocation()
     CurrentLocation.x = Config.Locations["towspots"][randomLocation].coords.x
@@ -215,8 +214,16 @@ end
 RegisterNetEvent('qb-tow:client:SpawnVehicle', function()
     local vehicleInfo = selectedVeh
     local coords = Config.Locations["vehicle"].coords
-    local netId = lib.callback.await('qb-tow:server:spawnVehicle', false, vehicleInfo, coords, "TOWR"..tostring(math.random(1000, 9999)), true)
-    local veh = NetToVeh(netId)
+    local plate = "TOWR"..tostring(math.random(1000, 9999))
+    local netId = lib.callback.await('qb-tow:server:spawnVehicle', false, vehicleInfo, coords, true)
+    local timeout = 100
+    while not NetworkDoesEntityExistWithNetworkId(netId) and timeout > 0 do
+        Wait(10)
+        timeout -= 1
+    end
+    local veh = NetworkGetEntityFromNetworkId(netId)
+    SetVehicleNumberPlateText(veh, plate)
+    TriggerEvent("vehiclekeys:client:SetOwner", plate)
     SetVehicleEngineOn(veh, true, true, false)
     for i = 1, 9, 1 do
         SetVehicleExtra(veh, i, false)
@@ -224,7 +231,7 @@ RegisterNetEvent('qb-tow:client:SpawnVehicle', function()
 end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
-    PlayerJob = QBCore.Functions.GetPlayerData().job
+    PlayerJob = QBX.PlayerData.job
 
     if PlayerJob.name == "tow" then
         CreateElements()
@@ -240,9 +247,9 @@ RegisterNetEvent('QBCore:Client:OnJobUpdate', function(JobInfo)
 end)
 
 RegisterNetEvent('jobs:client:ToggleNpc', function()
-    if QBCore.Functions.GetPlayerData().job.name == "tow" then
+    if QBX.PlayerData.job.name == "tow" then
         if CurrentTow then
-            QBCore.Functions.Notify(Lang:t("error.finish_work"), "error")
+            exports.qbx_core:Notify(Lang:t("error.finish_work"), "error")
             return
         end
         NpcOn = not NpcOn
@@ -280,7 +287,7 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
             
             if NpcOn and CurrentLocation then
                 if GetEntityModel(targetVehicle) ~= joaat(CurrentLocation.model) then
-                    QBCore.Functions.Notify(Lang:t("error.vehicle_not_correct"), "error")
+                    exports.qbx_core:Notify(Lang:t("error.vehicle_not_correct"), "error")
                     return
                 end
             end
@@ -290,23 +297,26 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                     local towPos = GetEntityCoords(vehicle)
                     local targetPos = GetEntityCoords(targetVehicle)
                     if #(towPos - targetPos) < 11.0 then
-                        QBCore.Functions.Progressbar("towing_vehicle", Lang:t("mission.towing_vehicle"), 5000, false, true, {
-                            disableMovement = true,
-                            disableCarMovement = true,
-                            disableMouse = false,
-                            disableCombat = true,
-                        }, {
-                            animDict = "mini@repair",
-                            anim = "fixing_a_ped",
-                            flags = 16,
-                        }, {}, {}, function() -- Done
+                        if lib.progressBar({
+                            duration = 5000,
+                            label = Lang:t("mission.towing_vehicle"),
+                            useWhileDead = false,
+                            canCancel = true,
+                            disable = {
+                                car = true,
+                            },
+                            anim = {
+                                dict = 'mini@repair',
+                                clip = 'fixing_a_ped'
+                            },
+                        }) then 
                             StopAnimTask(cache.ped, "mini@repair", "fixing_a_ped", 1.0)
                             AttachEntityToEntity(targetVehicle, vehicle, GetEntityBoneIndexByName(vehicle, 'bodyshell'), 0.0, -1.5 + -0.85, 0.0 + 1.15, 0, 0, 0, true, true, false, true, 0, true)
                             FreezeEntityPosition(targetVehicle, true)
                             CurrentTow = targetVehicle
                             if NpcOn then
                                 RemoveBlip(CurrentBlip)
-                                QBCore.Functions.Notify(Lang:t("mission.goto_depot"), "primary", 5000)
+                                exports.qbx_core:Notify(Lang:t("mission.goto_depot"), "primary", 5000)
                                 CurrentBlip2 = AddBlipForCoord(Config.Locations["dropoff"].coords.x, Config.Locations["dropoff"].coords.y, Config.Locations["dropoff"].coords.z)
                                 SetBlipColour(CurrentBlip2, 3)
                                 SetBlipRoute(CurrentBlip2, true)
@@ -318,25 +328,28 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                                 --remove zone
                                 CurrentLocation.zoneCombo:destroy()
                             end
-                            QBCore.Functions.Notify(Lang:t("mission.vehicle_towed"), "success")
-                        end, function() -- Cancel
+                            exports.qbx_core:Notify(Lang:t("mission.vehicle_towed"), "success")
+                        else 
                             StopAnimTask(cache.ped, "mini@repair", "fixing_a_ped", 1.0)
-                            QBCore.Functions.Notify(Lang:t("error.failed"), "error")
-                        end)
+                            exports.qbx_core:Notify(Lang:t("error.failed"), "error")
+                        end
                     end
                 end
             end
         else
-            QBCore.Functions.Progressbar("untowing_vehicle", Lang:t("mission.untowing_vehicle"), 5000, false, true, {
-                disableMovement = true,
-                disableCarMovement = true,
-                disableMouse = false,
-                disableCombat = true,
-            }, {
-                animDict = "mini@repair",
-                anim = "fixing_a_ped",
-                flags = 16,
-            }, {}, {}, function() -- Done
+            if lib.progressBar({
+                duration = 5000,
+                label = Lang:t("mission.untowing_vehicle"),
+                useWhileDead = false,
+                canCancel = true,
+                disable = {
+                    car = true,
+                },
+                anim = {
+                    dict = 'mini@repair',
+                    clip = 'fixing_a_ped'
+                },
+            }) then 
                 StopAnimTask(cache.ped, "mini@repair", "fixing_a_ped", 1.0)
                 FreezeEntityPosition(CurrentTow, false)
                 Wait(250)
@@ -351,14 +364,14 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                 RemoveBlip(CurrentBlip2)
                 CurrentTow = nil
                 drawDropOff = false
-                QBCore.Functions.Notify(Lang:t("mission.vehicle_takenoff"), "success")
-            end, function() -- Cancel
+                exports.qbx_core:Notify(Lang:t("mission.vehicle_takenoff"), "success")
+            else 
                 StopAnimTask(cache.ped, "mini@repair", "fixing_a_ped", 1.0)
-                QBCore.Functions.Notify(Lang:t("error.failed"), "error")
-            end)
+                exports.qbx_core:Notify(Lang:t("error.failed"), "error")
+            end
         end
     else
-        QBCore.Functions.Notify(Lang:t("error.not_towing_vehicle"), "error")
+        exports.qbx_core:Notify(Lang:t("error.not_towing_vehicle"), "error")
     end
 end)
 
@@ -371,7 +384,7 @@ RegisterNetEvent('qb-tow:client:TakeOutVehicle', function(data)
         TriggerServerEvent('qb-tow:server:DoBail', true, vehicleInfo)
         selectedVeh = vehicleInfo
     else
-        QBCore.Functions.Notify(Lang:t("error.too_far_away"), 'error')
+        exports.qbx_core:Notify(Lang:t("error.too_far_away"), 'error')
     end
 end)
 
@@ -385,7 +398,7 @@ RegisterNetEvent('qb-tow:client:Vehicle', function()
             MenuGarage()
         end
     else
-        QBCore.Functions.Notify(Lang:t("error.finish_work"), "error")
+        exports.qbx_core:Notify(Lang:t("error.finish_work"), "error")
     end
 end)
 
@@ -396,7 +409,7 @@ RegisterNetEvent('qb-tow:client:PaySlip', function()
         JobsDone = 0
         NpcOn = false
     else
-        QBCore.Functions.Notify(Lang:t("error.no_work_done"), "error")
+        exports.qbx_core:Notify(Lang:t("error.no_work_done"), "error")
     end
 end)
 
