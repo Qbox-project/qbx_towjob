@@ -307,7 +307,7 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                                 dict = 'mini@repair',
                                 clip = 'fixing_a_ped'
                             },
-                        }) then 
+                        }) then
                             StopAnimTask(cache.ped, "mini@repair", "fixing_a_ped", 1.0)
                             AttachEntityToEntity(targetVehicle, vehicle, GetEntityBoneIndexByName(vehicle, 'bodyshell'), 0.0, -1.5 + -0.85, 0.0 + 1.15, 0, 0, 0, true, true, false, true, 0, true)
                             FreezeEntityPosition(targetVehicle, true)
@@ -327,7 +327,7 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                                 CurrentLocation.zoneCombo:destroy()
                             end
                             exports.qbx_core:Notify(Lang:t("mission.vehicle_towed"), "success")
-                        else 
+                        else
                             StopAnimTask(cache.ped, "mini@repair", "fixing_a_ped", 1.0)
                             exports.qbx_core:Notify(Lang:t("error.failed"), "error")
                         end
@@ -347,7 +347,7 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                     dict = 'mini@repair',
                     clip = 'fixing_a_ped'
                 },
-            }) then 
+            }) then
                 StopAnimTask(cache.ped, "mini@repair", "fixing_a_ped", 1.0)
                 FreezeEntityPosition(CurrentTow, false)
                 Wait(250)
@@ -363,7 +363,7 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                 CurrentTow = nil
                 drawDropOff = false
                 exports.qbx_core:Notify(Lang:t("mission.vehicle_takenoff"), "success")
-            else 
+            else
                 StopAnimTask(cache.ped, "mini@repair", "fixing_a_ped", 1.0)
                 exports.qbx_core:Notify(Lang:t("error.failed"), "error")
             end
