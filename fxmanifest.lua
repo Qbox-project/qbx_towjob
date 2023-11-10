@@ -4,8 +4,13 @@ game 'gta5'
 description 'QBX-TowJob'
 version '1.0.0'
 
+modules {
+    	'qbx_core:utils'
+}
+
 shared_scripts {
 	'@ox_lib/init.lua',
+	'@qbx_core/import.lua',
 	'@qb-core/shared/locale.lua',
 	'config.lua',
 	'locales/en.lua',
