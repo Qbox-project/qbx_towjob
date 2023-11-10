@@ -1,10 +1,9 @@
-local QBCore = exports['qbx-core']:GetCoreObject()
 local PaymentTax = 15
 local Bail = {}
 
 RegisterNetEvent('qb-tow:server:DoBail', function(bool, vehInfo)
     local src = source
-    local Player = QBCore.Functions.GetPlayer(src)
+    local Player = exports.qbx_core:GetPlayer(src)
     local paymentMethod
 
     if not bool then
@@ -34,7 +33,7 @@ end)
 
 RegisterNetEvent('qb-tow:server:nano', function(vehNetID)
     local src = source
-    local Player = QBCore.Functions.GetPlayer(src)
+    local Player = exports.qbx_core:GetPlayer(src)
     local targetVehicle = NetworkGetEntityFromNetworkId(vehNetID)
     if not Player then return end
 
@@ -54,7 +53,7 @@ end)
 
 RegisterNetEvent('qb-tow:server:11101110', function(drops)
     local src = source
-    local Player = QBCore.Functions.GetPlayer(src)
+    local Player = exports.qbx_core:GetPlayer(src)
     if not Player then return end
 
     local playerPed = GetPlayerPed(src)
@@ -79,22 +78,22 @@ RegisterNetEvent('qb-tow:server:11101110', function(drops)
     TriggerClientEvent('ox_lib:notify', src, {description = Lang:t("success.you_earned", { value = payment }), type = 'success'})
 end)
 
-QBCore.Commands.Add("npc", Lang:t("info.toggle_npc"), {}, false, function(source)
+lib.addCommand('npc', {
+    help = Lang:t("info.toggle_npc"),
+}, function(source)
     TriggerClientEvent("jobs:client:ToggleNpc", source)
 end)
 
-QBCore.Commands.Add("tow", Lang:t("info.tow"), {}, false, function(source)
-    local Player = QBCore.Functions.GetPlayer(source)
+lib.addCommand('tow', {
+    help = Lang:t("info.tow"),
+}, function(source)
+    local Player = exports.qbx_core:GetPlayer(source)
     if Player.PlayerData.job.name ~= "tow" and Player.PlayerData.job.name ~= "mechanic" then return end
     TriggerClientEvent("qb-tow:client:TowVehicle", source)
 end)
 
-lib.callback.register('qb-tow:server:spawnVehicle', function(source, model, coords, plate, warp)
-    local netId = QBCore.Functions.CreateVehicle(source, model, coords, warp)
+lib.callback.register('qb-tow:server:spawnVehicle', function(source, model, coords, warp)
+    local netId = SpawnVehicle(source, model, coords, warp)
     if not netId or netId == 0 then return end
-    local veh = NetworkGetEntityFromNetworkId(netId)
-    if not veh or veh == 0 then return end
-    if plate then SetVehicleNumberPlateText(veh, plate) end
-    TriggerClientEvent('vehiclekeys:client:SetOwner', source, plate or QBCore.Functions.GetPlate(veh))
     return netId
 end)
