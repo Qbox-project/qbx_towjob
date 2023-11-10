@@ -231,8 +231,6 @@ RegisterNetEvent('qb-tow:client:SpawnVehicle', function()
 end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
-    PlayerJob = QBX.PlayerData.job
-
     if PlayerJob.name == "tow" then
         CreateElements()
     end
