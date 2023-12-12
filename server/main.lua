@@ -1,4 +1,5 @@
-local PaymentTax = 15
+local config = require 'config.server'
+local sharedConfig = require 'config.shared'
 local Bail = {}
 
 RegisterNetEvent('qb-tow:server:DoBail', function(bool, vehInfo)
@@ -10,24 +11,24 @@ RegisterNetEvent('qb-tow:server:DoBail', function(bool, vehInfo)
         if not Bail[Player.PlayerData.citizenid] then return end
         Player.Functions.AddMoney('bank', Bail[Player.PlayerData.citizenid], "tow-bail-paid")
         Bail[Player.PlayerData.citizenid] = nil
-        TriggerClientEvent('ox_lib:notify', src, {description = Lang:t("success.refund_to_cash", { value = Config.BailPrice }), type = 'success'})
+        TriggerClientEvent('ox_lib:notify', src, {description = Lang:t("success.refund_to_cash", { value = config.bailPrice }), type = 'success'})
         return
     end
 
-    if Player.PlayerData.money.cash < Config.BailPrice or Player.PlayerData.money.bank < Config.BailPrice then
-        TriggerClientEvent('ox_lib:notify', src, {description = Lang:t("error.no_deposit", { value = Config.BailPrice }), type = 'error'})
+    if Player.PlayerData.money.cash < config.bailPrice or Player.PlayerData.money.bank < config.bailPrice then
+        TriggerClientEvent('ox_lib:notify', src, {description = Lang:t("error.no_deposit", { value = config.bailPrice }), type = 'error'})
         return
     end
 
-    if Player.PlayerData.money.cash >= Config.BailPrice then
+    if Player.PlayerData.money.cash >= config.bailPrice then
         paymentMethod = 'cash'
     else
         paymentMethod = 'bank'
     end
 
-    Bail[Player.PlayerData.citizenid] = Config.BailPrice
-    Player.Functions.RemoveMoney(paymentMethod, Config.BailPrice, "tow-paid-bail")
-    TriggerClientEvent('ox_lib:notify', src, {description = Lang:t("success.paid_with_" .. paymentMethod, { value = Config.BailPrice }), type = 'success'})
+    Bail[Player.PlayerData.citizenid] = config.bailPrice
+    Player.Functions.RemoveMoney(paymentMethod, config.bailPrice, "tow-paid-bail")
+    TriggerClientEvent('ox_lib:notify', src, {description = Lang:t("success.paid_with_" .. paymentMethod, { value = config.bailPrice }), type = 'success'})
     TriggerClientEvent('qb-tow:client:SpawnVehicle', src, vehInfo)
 end)
 
@@ -58,7 +59,7 @@ RegisterNetEvent('qb-tow:server:11101110', function(drops)
 
     local playerPed = GetPlayerPed(src)
     local playerCoords = GetEntityCoords(playerPed)
-    if Player.PlayerData.job.name ~= "tow" or #(playerCoords - vec3(Config.Locations["main"].coords.x, Config.Locations["main"].coords.y, Config.Locations["main"].coords.z)) > 6.0 then
+    if Player.PlayerData.job.name ~= "tow" or #(playerCoords - vec3(sharedConfig.locations["main"].coords.x, sharedConfig.locations["main"].coords.y, sharedConfig.locations["main"].coords.z)) > 6.0 then
         return DropPlayer(src, Lang:t("info.skick"))
     end
 
@@ -70,7 +71,7 @@ RegisterNetEvent('qb-tow:server:11101110', function(drops)
         bonus = math.ceil((DropPrice / 10) * ((3 * (drops / 5)) + 2))
     end
     local price = (DropPrice * drops) + bonus
-    local taxAmount = math.ceil((price / 100) * PaymentTax)
+    local taxAmount = math.ceil((price / 100) * config.paymentTax)
     local payment = price - taxAmount
 
     Player.Functions.AddJobReputation(1)

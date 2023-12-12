@@ -1,3 +1,5 @@
+local config = require 'config.client'
+local sharedConfig = require 'config.shared'
 local PlayerJob = {}
 local JobsDone = 0
 local NpcOn = false
@@ -14,10 +16,10 @@ local drawDropOff = false
 -- Functions
 
 local function getRandomVehicleLocation()
-    local randomVehicle = math.random(1, #Config.Locations["towspots"])
+    local randomVehicle = math.random(1, #sharedConfig.locations["towspots"])
     while randomVehicle == LastVehicle do
         Wait(10)
-        randomVehicle = math.random(1, #Config.Locations["towspots"])
+        randomVehicle = math.random(1, #sharedConfig.locations["towspots"])
     end
     return randomVehicle
 end
@@ -25,7 +27,7 @@ end
 local function drawDropOffMarker()
     CreateThread(function()
         while drawDropOff do
-            DrawMarker(2, Config.Locations["dropoff"].coords.x, Config.Locations["dropoff"].coords.y, Config.Locations["dropoff"].coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 200, 0, 0, 222, false, false, 0, true, false, false, false)
+            DrawMarker(2, sharedConfig.locations["dropoff"].coords.x, sharedConfig.locations["dropoff"].coords.y, sharedConfig.locations["dropoff"].coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 200, 0, 0, 222, false, false, 0, true, false, false, false)
             Wait(0)
         end
     end)
@@ -38,7 +40,7 @@ local function getVehicleInDirection(coordFrom, coordTo)
 end
 
 local function isTowVehicle(vehicle)
-    for k in pairs(Config.Vehicles) do
+    for k in pairs(config.vehicles) do
         if GetEntityModel(vehicle) == joaat(k) then
             return true
         end
@@ -50,9 +52,9 @@ end
 
 local function MenuGarage()
     local towMenu = {}
-    for k in pairs(Config.Vehicles) do
+    for k in pairs(config.vehicles) do
         towMenu[#towMenu + 1] = {
-            title = Config.Vehicles[k],
+            title = config.vehicles[k],
             event = "qb-tow:client:TakeOutVehicle",
             args = {
                 vehicle = k
@@ -80,27 +82,27 @@ local function CreateZone(type, number)
     if type == "main" then
         event = "qb-tow:client:PaySlip"
         label = Lang:t("label.payslip")
-        coords = Config.Locations["main"].coords.xyz
-        heading = Config.Locations["main"].coords.w
-        boxName = Config.Locations["main"].label
+        coords = sharedConfig.locations["main"].coords.xyz
+        heading = sharedConfig.locations["main"].coords.w
+        boxName = sharedConfig.locations["main"].label
         size = 3
     elseif type == "vehicle" then
         event = "qb-tow:client:Vehicle"
         label = Lang:t("label.vehicle")
-        coords = Config.Locations["vehicle"].coords.xyz
-        heading = Config.Locations["vehicle"].coords.w
-        boxName = Config.Locations["vehicle"].label
+        coords = sharedConfig.locations["vehicle"].coords.xyz
+        heading = sharedConfig.locations["vehicle"].coords.w
+        boxName = sharedConfig.locations["vehicle"].label
         size = 5
     elseif type == "towspots" then
         event = "qb-tow:client:SpawnNPCVehicle"
         label = Lang:t("label.npcz")
-        coords = Config.Locations[type][number].coords.xyz
-        heading = Config.Locations["towspots"][number].coords.w --[[@as number?]]
-        boxName = Config.Locations["towspots"][number].name
+        coords = sharedConfig.locations[type][number].coords.xyz
+        heading = sharedConfig.locations["towspots"][number].coords.w --[[@as number?]]
+        boxName = sharedConfig.locations["towspots"][number].name
         size = 50
     end
 
-    if Config.UseTarget and type == "main" then
+    if config.useTarget and type == "main" then
         exports['qb-target']:AddBoxZone(boxName, coords, size, size, {
             minZ = coords.z - 5.0,
             maxZ = coords.z + 5.0,
@@ -172,10 +174,10 @@ local function deliverVehicle(vehicle)
     exports.qbx_core:Notify(Lang:t("mission.get_new_vehicle"))
 
     local randomLocation = getRandomVehicleLocation()
-    CurrentLocation.x = Config.Locations["towspots"][randomLocation].coords.x
-    CurrentLocation.y = Config.Locations["towspots"][randomLocation].coords.y
-    CurrentLocation.z = Config.Locations["towspots"][randomLocation].coords.z
-    CurrentLocation.model = Config.Locations["towspots"][randomLocation].model
+    CurrentLocation.x = sharedConfig.locations["towspots"][randomLocation].coords.x
+    CurrentLocation.y = sharedConfig.locations["towspots"][randomLocation].coords.y
+    CurrentLocation.z = sharedConfig.locations["towspots"][randomLocation].coords.z
+    CurrentLocation.model = sharedConfig.locations["towspots"][randomLocation].model
     CurrentLocation.id = randomLocation
     CreateZone("towspots", randomLocation)
 
@@ -186,24 +188,24 @@ local function deliverVehicle(vehicle)
 end
 
 local function CreateElements()
-    local TowBlip = AddBlipForCoord(Config.Locations["main"].coords.x, Config.Locations["main"].coords.y, Config.Locations["main"].coords.z)
+    local TowBlip = AddBlipForCoord(sharedConfig.locations["main"].coords.x, sharedConfig.locations["main"].coords.y, sharedConfig.locations["main"].coords.z)
     SetBlipSprite(TowBlip, 477)
     SetBlipDisplay(TowBlip, 4)
     SetBlipScale(TowBlip, 0.6)
     SetBlipAsShortRange(TowBlip, true)
     SetBlipColour(TowBlip, 15)
     BeginTextCommandSetBlipName("STRING")
-    AddTextComponentSubstringPlayerName(Config.Locations["main"].label)
+    AddTextComponentSubstringPlayerName(sharedConfig.locations["main"].label)
     EndTextCommandSetBlipName(TowBlip)
 
-    local TowVehBlip = AddBlipForCoord(Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z)
+    local TowVehBlip = AddBlipForCoord(sharedConfig.locations["vehicle"].coords.x, sharedConfig.locations["vehicle"].coords.y, sharedConfig.locations["vehicle"].coords.z)
     SetBlipSprite(TowVehBlip, 326)
     SetBlipDisplay(TowVehBlip, 4)
     SetBlipScale(TowVehBlip, 0.6)
     SetBlipAsShortRange(TowVehBlip, true)
     SetBlipColour(TowVehBlip, 15)
     BeginTextCommandSetBlipName("STRING")
-    AddTextComponentSubstringPlayerName(Config.Locations["vehicle"].label)
+    AddTextComponentSubstringPlayerName(sharedConfig.locations["vehicle"].label)
     EndTextCommandSetBlipName(TowVehBlip)
 
     CreateZone("main")
@@ -213,7 +215,7 @@ end
 
 RegisterNetEvent('qb-tow:client:SpawnVehicle', function()
     local vehicleInfo = selectedVeh
-    local coords = Config.Locations["vehicle"].coords
+    local coords = sharedConfig.locations["vehicle"].coords
     local plate = "TOWR"..tostring(math.random(1000, 9999))
     local netId = lib.callback.await('qb-tow:server:spawnVehicle', false, vehicleInfo, coords, true)
     local timeout = 100
@@ -253,10 +255,10 @@ RegisterNetEvent('jobs:client:ToggleNpc', function()
         NpcOn = not NpcOn
         if NpcOn then
             local randomLocation = getRandomVehicleLocation()
-            CurrentLocation.x = Config.Locations["towspots"][randomLocation].coords.x
-            CurrentLocation.y = Config.Locations["towspots"][randomLocation].coords.y
-            CurrentLocation.z = Config.Locations["towspots"][randomLocation].coords.z
-            CurrentLocation.model = Config.Locations["towspots"][randomLocation].model
+            CurrentLocation.x = sharedConfig.locations["towspots"][randomLocation].coords.x
+            CurrentLocation.y = sharedConfig.locations["towspots"][randomLocation].coords.y
+            CurrentLocation.z = sharedConfig.locations["towspots"][randomLocation].coords.z
+            CurrentLocation.model = sharedConfig.locations["towspots"][randomLocation].model
             CurrentLocation.id = randomLocation
             CreateZone("towspots", randomLocation)
 
@@ -282,7 +284,7 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
             local coordA = GetEntityCoords(cache.ped)
             local coordB = GetOffsetFromEntityInWorldCoords(cache.ped, 0.0, -30.0, 0.0)
             local targetVehicle = getVehicleInDirection(coordA, coordB)
-            
+
             if NpcOn and CurrentLocation then
                 if GetEntityModel(targetVehicle) ~= joaat(CurrentLocation.model) then
                     exports.qbx_core:Notify(Lang:t("error.vehicle_not_correct"), "error")
@@ -315,7 +317,7 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                             if NpcOn then
                                 RemoveBlip(CurrentBlip)
                                 exports.qbx_core:Notify(Lang:t("mission.goto_depot"), "primary", 5000)
-                                CurrentBlip2 = AddBlipForCoord(Config.Locations["dropoff"].coords.x, Config.Locations["dropoff"].coords.y, Config.Locations["dropoff"].coords.z)
+                                CurrentBlip2 = AddBlipForCoord(sharedConfig.locations["dropoff"].coords.x, sharedConfig.locations["dropoff"].coords.y, sharedConfig.locations["dropoff"].coords.z)
                                 SetBlipColour(CurrentBlip2, 3)
                                 SetBlipRoute(CurrentBlip2, true)
                                 SetBlipRouteColour(CurrentBlip2, 3)
@@ -355,7 +357,7 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                 DetachEntity(CurrentTow, true, true)
                 if NpcOn then
                     local targetPos = GetEntityCoords(CurrentTow)
-                    if #(targetPos - vector3(Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z)) < 25.0 then
+                    if #(targetPos - vector3(sharedConfig.locations["vehicle"].coords.x, sharedConfig.locations["vehicle"].coords.y, sharedConfig.locations["vehicle"].coords.z)) < 25.0 then
                         deliverVehicle(CurrentTow)
                     end
                 end
@@ -374,7 +376,7 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
 end)
 
 RegisterNetEvent('qb-tow:client:TakeOutVehicle', function(data)
-    local coords = Config.Locations["vehicle"].coords
+    local coords = sharedConfig.locations["vehicle"].coords
     local ped = cache.ped
     local pos = GetEntityCoords(ped)
     if #(pos - coords.xyz) <= 5 then
@@ -433,7 +435,7 @@ CreateThread(function()
         sleep = 1000
         if showMarker then
             sleep = 0
-            DrawMarker(2, Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 200, 0, 0, 222, false, false, 0, true, false, false, false)
+            DrawMarker(2, sharedConfig.locations["vehicle"].coords.x, sharedConfig.locations["vehicle"].coords.y, sharedConfig.locations["vehicle"].coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 200, 0, 0, 222, false, false, 0, true, false, false, false)
         end
         Wait(sleep)
     end
