@@ -123,7 +123,6 @@ local function CreateZone(type, number)
             size = size,
             rotation = heading,
             debug = config.debugPoly,
-            event = event,
             onEnter = function()
                 TriggerEvent(event)
             end,
