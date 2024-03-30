@@ -94,7 +94,7 @@ lib.addCommand('tow', {
 end)
 
 lib.callback.register('qb-tow:server:spawnVehicle', function(source, model, coords, warp)
-    local warpPed = warp and GetPlayerPed(source) or false
+    local warpPed = warp and GetPlayerPed(source)
     local netId = qbx.spawnVehicle({model = model, spawnSource = coords, warp = warpPed})
     if not netId or netId == 0 then return end
     return netId
