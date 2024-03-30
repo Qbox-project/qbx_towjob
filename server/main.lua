@@ -11,12 +11,12 @@ RegisterNetEvent('qb-tow:server:DoBail', function(bool, vehInfo)
         if not Bail[Player.PlayerData.citizenid] then return end
         Player.Functions.AddMoney('bank', Bail[Player.PlayerData.citizenid], "tow-bail-paid")
         Bail[Player.PlayerData.citizenid] = nil
-        TriggerClientEvent('ox_lib:notify', src, {description = Lang:t("success.refund_to_cash", { value = config.bailPrice }), type = 'success'})
+        TriggerClientEvent('ox_lib:notify', src, {description = locale("success.refund_to_cash", config.bailPrice), type = 'success'})
         return
     end
 
     if Player.PlayerData.money.cash < config.bailPrice or Player.PlayerData.money.bank < config.bailPrice then
-        TriggerClientEvent('ox_lib:notify', src, {description = Lang:t("error.no_deposit", { value = config.bailPrice }), type = 'error'})
+        TriggerClientEvent('ox_lib:notify', src, {description = locale("error.no_deposit", config.bailPrice), type = 'error'})
         return
     end
 
@@ -28,7 +28,7 @@ RegisterNetEvent('qb-tow:server:DoBail', function(bool, vehInfo)
 
     Bail[Player.PlayerData.citizenid] = config.bailPrice
     Player.Functions.RemoveMoney(paymentMethod, config.bailPrice, "tow-paid-bail")
-    TriggerClientEvent('ox_lib:notify', src, {description = Lang:t("success.paid_with_" .. paymentMethod, { value = config.bailPrice }), type = 'success'})
+    TriggerClientEvent('ox_lib:notify', src, {description = locale("success.paid_with_" .. paymentMethod, config.bailPrice), type = 'success'})
     TriggerClientEvent('qb-tow:client:SpawnVehicle', src, vehInfo)
 end)
 
@@ -44,7 +44,7 @@ RegisterNetEvent('qb-tow:server:nano', function(vehNetID)
     local targetVehicleCoords = GetEntityCoords(targetVehicle)
     local dist = #(playerVehicleCoords - targetVehicleCoords)
     if Player.PlayerData.job.name ~= "tow" or dist > 15.0 then
-        return DropPlayer(src, Lang:t("info.skick"))
+        return DropPlayer(src, locale("info.skick"))
     end
 
     local chance = math.random(1, 100)
@@ -60,7 +60,7 @@ RegisterNetEvent('qb-tow:server:11101110', function(drops)
     local playerPed = GetPlayerPed(src)
     local playerCoords = GetEntityCoords(playerPed)
     if Player.PlayerData.job.name ~= "tow" or #(playerCoords - vec3(sharedConfig.locations["main"].coords.x, sharedConfig.locations["main"].coords.y, sharedConfig.locations["main"].coords.z)) > 6.0 then
-        return DropPlayer(src, Lang:t("info.skick"))
+        return DropPlayer(src, locale("info.skick"))
     end
 
     drops = tonumber(drops)
@@ -76,17 +76,17 @@ RegisterNetEvent('qb-tow:server:11101110', function(drops)
 
     Player.Functions.AddJobReputation(1)
     Player.Functions.AddMoney("bank", payment, "tow-salary")
-    TriggerClientEvent('ox_lib:notify', src, {description = Lang:t("success.you_earned", { value = payment }), type = 'success'})
+    TriggerClientEvent('ox_lib:notify', src, {description = locale("success.you_earned", payment), type = 'success'})
 end)
 
 lib.addCommand('npc', {
-    help = Lang:t("info.toggle_npc"),
+    help = locale("info.toggle_npc"),
 }, function(source)
     TriggerClientEvent("jobs:client:ToggleNpc", source)
 end)
 
 lib.addCommand('tow', {
-    help = Lang:t("info.tow"),
+    help = locale("info.tow"),
 }, function(source)
     local Player = exports.qbx_core:GetPlayer(source)
     if Player.PlayerData.job.name ~= "tow" and Player.PlayerData.job.name ~= "mechanic" then return end
