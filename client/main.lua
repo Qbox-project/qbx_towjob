@@ -85,7 +85,7 @@ local function CreateZone(type, number)
         coords = sharedConfig.locations["main"].coords.xyz
         heading = sharedConfig.locations["main"].coords.w
         boxName = sharedConfig.locations["main"].label
-        size = vec3(3,3,10)
+        size = vec3(3, 3, 10)
     elseif type == "vehicle" then
         event = "qb-tow:client:Vehicle"
         label = locale("label.vehicle")
@@ -124,8 +124,8 @@ local function CreateZone(type, number)
             rotation = heading,
             debug = config.debugPoly,
             event = event,
-            inside = function(self)
-                TriggerEvent(self.event)
+            onEnter = function()
+                TriggerEvent(event)
             end,
         })
         if type == "vehicle" then
@@ -134,10 +134,10 @@ local function CreateZone(type, number)
                 size = vec3(20,20,10),
                 rotation = heading,
                 debug = config.debugPoly,
-                onEnter = function(self)
+                onEnter = function()
                     TriggerEvent('qb-tow:client:ShowMarker', true)
                 end,
-                onExit = function(self)
+                onExit = function()
                     TriggerEvent('qb-tow:client:ShowMarker', false)
                 end
             })
