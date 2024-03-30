@@ -92,14 +92,14 @@ local function CreateZone(type, number)
         coords = sharedConfig.locations["vehicle"].coords.xyz
         heading = sharedConfig.locations["vehicle"].coords.w
         boxName = sharedConfig.locations["vehicle"].label
-        size = vec3(5,5,10)
+        size = vec3(5, 5, 10)
     elseif type == "towspots" then
         event = "qb-tow:client:SpawnNPCVehicle"
         label = locale("label.npcz")
         coords = sharedConfig.locations[type][number].coords.xyz
         heading = sharedConfig.locations["towspots"][number].coords.w --[[@as number?]]
         boxName = sharedConfig.locations["towspots"][number].name
-        size = vec3(50,50,10)
+        size = vec3(50, 50, 10)
     end
 
     if config.useTarget and type == "main" then
