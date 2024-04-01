@@ -64,7 +64,7 @@ local function MenuGarage()
 
     lib.registerContext({
         id = 'tow_veh_menu',
-        title = Lang:t("menu.header"),
+        title = locale("menu.header"),
         options = towMenu
     })
 
@@ -81,86 +81,68 @@ local function CreateZone(type, number)
 
     if type == "main" then
         event = "qb-tow:client:PaySlip"
-        label = Lang:t("label.payslip")
+        label = locale("label.payslip")
         coords = sharedConfig.locations["main"].coords.xyz
         heading = sharedConfig.locations["main"].coords.w
         boxName = sharedConfig.locations["main"].label
-        size = 3
+        size = vec3(3, 3, 10)
     elseif type == "vehicle" then
         event = "qb-tow:client:Vehicle"
-        label = Lang:t("label.vehicle")
+        label = locale("label.vehicle")
         coords = sharedConfig.locations["vehicle"].coords.xyz
         heading = sharedConfig.locations["vehicle"].coords.w
         boxName = sharedConfig.locations["vehicle"].label
-        size = 5
+        size = vec3(5, 5, 10)
     elseif type == "towspots" then
         event = "qb-tow:client:SpawnNPCVehicle"
-        label = Lang:t("label.npcz")
+        label = locale("label.npcz")
         coords = sharedConfig.locations[type][number].coords.xyz
         heading = sharedConfig.locations["towspots"][number].coords.w --[[@as number?]]
         boxName = sharedConfig.locations["towspots"][number].name
-        size = 50
+        size = vec3(50, 50, 10)
     end
 
     if config.useTarget and type == "main" then
-        exports['qb-target']:AddBoxZone(boxName, coords, size, size, {
-            minZ = coords.z - 5.0,
-            maxZ = coords.z + 5.0,
+        exports.ox_target:addBoxZone({
             name = boxName,
-            heading = heading,
-            debugPoly = false,
-        }, {
+            coords = coords,
+            size = size,
+            rotation = heading,
+            debug = config.debugPoly,
             options = {
                 {
-                    type = "client",
                     event = event,
                     label = label,
-                },
-            },
-            distance = 2
+                    distance = 2,
+                }
+            }
         })
     else
-        local zone = BoxZone:Create(
-            coords, size, size, {
-                minZ = coords.z - 5.0,
-                maxZ = coords.z + 5.0,
-                name = boxName,
-                debugPoly = false,
-                heading = heading,
-            })
-
-        local zoneCombo = ComboZone:Create({zone}, {name = boxName, debugPoly = false})
-        zoneCombo:onPlayerInOut(function(isPointInside)
-            if isPointInside then
-                if type == "main" then
-                    TriggerEvent('qb-tow:client:PaySlip')
-                elseif type == "vehicle" then
-                    TriggerEvent('qb-tow:client:Vehicle')
-                elseif type == "towspots" then
-                    TriggerEvent('qb-tow:client:SpawnNPCVehicle')
-                end
-            end
-        end)
+        local zone = lib.zones.box({
+            coords = coords,
+            size = size,
+            rotation = heading,
+            debug = config.debugPoly,
+            onEnter = function()
+                TriggerEvent(event)
+            end,
+        })
         if type == "vehicle" then
-            local zoneMark = BoxZone:Create(
-                coords, 20, 20, {
-                    minZ = coords.z - 5.0,
-                    maxZ = coords.z + 5.0,
-                    name = boxName,
-                    debugPoly = false,
-                    heading = heading,
-                })
-
-            local zoneComboV = ComboZone:Create({zoneMark}, {name = boxName, debugPoly = false})
-            zoneComboV:onPlayerInOut(function(isPointInside)
-                if isPointInside then
+            local zoneMark = lib.zones.box({
+                coords = coords,
+                size = vec3(20,20,10),
+                rotation = heading,
+                debug = config.debugPoly,
+                onEnter = function()
                     TriggerEvent('qb-tow:client:ShowMarker', true)
-                else
+                end,
+                onExit = function()
                     TriggerEvent('qb-tow:client:ShowMarker', false)
                 end
-            end)
+            })
+            CurrentLocation.zoneCombo = zoneMark
         elseif type == "towspots" then
-            CurrentLocation.zoneCombo = zoneCombo
+            CurrentLocation.zoneCombo = zone
         end
     end
 end
@@ -170,8 +152,8 @@ local function deliverVehicle(vehicle)
     RemoveBlip(CurrentBlip2)
     JobsDone += 1
     VehicleSpawned = false
-    exports.qbx_core:Notify(Lang:t("mission.delivered_vehicle"), "success")
-    exports.qbx_core:Notify(Lang:t("mission.get_new_vehicle"))
+    exports.qbx_core:Notify(locale("mission.delivered_vehicle"), "success")
+    exports.qbx_core:Notify(locale("mission.get_new_vehicle"))
 
     local randomLocation = getRandomVehicleLocation()
     CurrentLocation.x = sharedConfig.locations["towspots"][randomLocation].coords.x
@@ -216,7 +198,7 @@ end
 RegisterNetEvent('qb-tow:client:SpawnVehicle', function()
     local vehicleInfo = selectedVeh
     local coords = sharedConfig.locations["vehicle"].coords
-    local plate = "TOWR"..tostring(math.random(1000, 9999))
+    local plate = "TOWR"..lib.string.random('1111')
     local netId = lib.callback.await('qb-tow:server:spawnVehicle', false, vehicleInfo, coords, true)
     local timeout = 100
     while not NetworkDoesEntityExistWithNetworkId(netId) and timeout > 0 do
@@ -249,7 +231,7 @@ end)
 RegisterNetEvent('jobs:client:ToggleNpc', function()
     if QBX.PlayerData.job.name == "tow" then
         if CurrentTow then
-            exports.qbx_core:Notify(Lang:t("error.finish_work"), "error")
+            exports.qbx_core:Notify(locale("error.finish_work"), "error")
             return
         end
         NpcOn = not NpcOn
@@ -287,7 +269,7 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
 
             if NpcOn and CurrentLocation then
                 if GetEntityModel(targetVehicle) ~= joaat(CurrentLocation.model) then
-                    exports.qbx_core:Notify(Lang:t("error.vehicle_not_correct"), "error")
+                    exports.qbx_core:Notify(locale("error.vehicle_not_correct"), "error")
                     return
                 end
             end
@@ -299,7 +281,7 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                     if #(towPos - targetPos) < 11.0 then
                         if lib.progressBar({
                             duration = 5000,
-                            label = Lang:t("mission.towing_vehicle"),
+                            label = locale("mission.towing_vehicle"),
                             useWhileDead = false,
                             canCancel = true,
                             disable = {
@@ -316,7 +298,7 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                             CurrentTow = targetVehicle
                             if NpcOn then
                                 RemoveBlip(CurrentBlip)
-                                exports.qbx_core:Notify(Lang:t("mission.goto_depot"), "primary", 5000)
+                                exports.qbx_core:Notify(locale("mission.goto_depot"), "inform", 5000)
                                 CurrentBlip2 = AddBlipForCoord(sharedConfig.locations["dropoff"].coords.x, sharedConfig.locations["dropoff"].coords.y, sharedConfig.locations["dropoff"].coords.z)
                                 SetBlipColour(CurrentBlip2, 3)
                                 SetBlipRoute(CurrentBlip2, true)
@@ -326,12 +308,12 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                                 local vehNetID = NetworkGetNetworkIdFromEntity(targetVehicle)
                                 TriggerServerEvent('qb-tow:server:nano', vehNetID)
                                 --remove zone
-                                CurrentLocation.zoneCombo:destroy()
+                                CurrentLocation.zoneCombo:remove()
                             end
-                            exports.qbx_core:Notify(Lang:t("mission.vehicle_towed"), "success")
+                            exports.qbx_core:Notify(locale("mission.vehicle_towed"), "success")
                         else
                             StopAnimTask(cache.ped, "mini@repair", "fixing_a_ped", 1.0)
-                            exports.qbx_core:Notify(Lang:t("error.failed"), "error")
+                            exports.qbx_core:Notify(locale("error.failed"), "error")
                         end
                     end
                 end
@@ -339,7 +321,7 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
         else
             if lib.progressBar({
                 duration = 5000,
-                label = Lang:t("mission.untowing_vehicle"),
+                label = locale("mission.untowing_vehicle"),
                 useWhileDead = false,
                 canCancel = true,
                 disable = {
@@ -364,14 +346,14 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                 RemoveBlip(CurrentBlip2)
                 CurrentTow = nil
                 drawDropOff = false
-                exports.qbx_core:Notify(Lang:t("mission.vehicle_takenoff"), "success")
+                exports.qbx_core:Notify(locale("mission.vehicle_takenoff"), "success")
             else
                 StopAnimTask(cache.ped, "mini@repair", "fixing_a_ped", 1.0)
-                exports.qbx_core:Notify(Lang:t("error.failed"), "error")
+                exports.qbx_core:Notify(locale("error.failed"), "error")
             end
         end
     else
-        exports.qbx_core:Notify(Lang:t("error.not_towing_vehicle"), "error")
+        exports.qbx_core:Notify(locale("error.not_towing_vehicle"), "error")
     end
 end)
 
@@ -384,7 +366,7 @@ RegisterNetEvent('qb-tow:client:TakeOutVehicle', function(data)
         TriggerServerEvent('qb-tow:server:DoBail', true, vehicleInfo)
         selectedVeh = vehicleInfo
     else
-        exports.qbx_core:Notify(Lang:t("error.too_far_away"), 'error')
+        exports.qbx_core:Notify(locale("error.too_far_away"), 'error')
     end
 end)
 
@@ -398,7 +380,7 @@ RegisterNetEvent('qb-tow:client:Vehicle', function()
             MenuGarage()
         end
     else
-        exports.qbx_core:Notify(Lang:t("error.finish_work"), "error")
+        exports.qbx_core:Notify(locale("error.finish_work"), "error")
     end
 end)
 
@@ -409,7 +391,7 @@ RegisterNetEvent('qb-tow:client:PaySlip', function()
         JobsDone = 0
         NpcOn = false
     else
-        exports.qbx_core:Notify(Lang:t("error.no_work_done"), "error")
+        exports.qbx_core:Notify(locale("error.no_work_done"), "error")
     end
 end)
 
