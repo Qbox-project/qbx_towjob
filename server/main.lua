@@ -11,12 +11,12 @@ RegisterNetEvent('qb-tow:server:DoBail', function(bool, vehInfo)
         if not Bail[Player.PlayerData.citizenid] then return end
         Player.Functions.AddMoney('bank', Bail[Player.PlayerData.citizenid], "tow-bail-paid")
         Bail[Player.PlayerData.citizenid] = nil
-        TriggerClientEvent('ox_lib:notify', src, {description = locale("success.refund_to_cash", config.bailPrice ), type = 'success'})
+        TriggerClientEvent('ox_lib:notify', src, {description = locale("success.refund_to_cash", config.bailPrice), type = 'success'})
         return
     end
 
     if Player.PlayerData.money.cash < config.bailPrice or Player.PlayerData.money.bank < config.bailPrice then
-        TriggerClientEvent('ox_lib:notify', src, {description = locale("error.no_deposit", config.bailPrice ), type = 'error'})
+        TriggerClientEvent('ox_lib:notify', src, {description = locale("error.no_deposit", config.bailPrice), type = 'error'})
         return
     end
 
@@ -28,7 +28,7 @@ RegisterNetEvent('qb-tow:server:DoBail', function(bool, vehInfo)
 
     Bail[Player.PlayerData.citizenid] = config.bailPrice
     Player.Functions.RemoveMoney(paymentMethod, config.bailPrice, "tow-paid-bail")
-    TriggerClientEvent('ox_lib:notify', src, {description = locale("success.paid_with_" .. paymentMethod, config.bailPrice ), type = 'success'})
+    TriggerClientEvent('ox_lib:notify', src, {description = locale("success.paid_with_" .. paymentMethod, config.bailPrice), type = 'success'})
     TriggerClientEvent('qb-tow:client:SpawnVehicle', src, vehInfo)
 end)
 
