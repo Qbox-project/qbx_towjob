@@ -19,9 +19,9 @@
         "close_menu": "⬅ Fechar Menu"
     },
     "mission": {
-        "delivered_vehicle": "Você Entregou Um Veículo",
-        "get_new_vehicle": "Um Novo Veículo Pode Ser Retirado",
-        "towing_vehicle": "Içando o Veículo...",
+        "delivered_vehicle": "Você entregou um Veículo",
+        "get_new_vehicle": "Um novo veículo pode ser retirado",
+        "towing_vehicle": "Guinchando o Veículo...",
         "goto_depot": "Leve o Veículo para o Depósito de Hayes",
         "vehicle_towed": "Veículo Rebocado",
         "untowing_vehicle": "Remover o Veículo",
