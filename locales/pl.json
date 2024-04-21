@@ -3,16 +3,16 @@
         "finish_work": "Najpierw zakończ swoją pracę",
         "vehicle_not_correct": "To nie jest właściwy pojazd",
         "failed": "Porażka",
-        "not_towing_vehicle": "Najpierw musiałeś być w pojeździe ciągnącym",
+        "not_towing_vehicle": "Musisz być w auto lawecie",
         "too_far_away": "Jesteś zbyt daleko",
-        "no_work_done": "Nie wykonałeś jeszcze żadnej pracy.",
-        "no_deposit": "$%s Depozyt wymagany"
+        "no_work_done": "Nie wykonałeś jeszcze żadnej pracy",
+        "no_deposit": "Wymagany depozyt %s$"
     },
     "success": {
-        "paid_with_cash": "$%s Depozyt zapłacony gotówką",
-        "paid_with_bank": "$%s Depozyt zapłacony z banku",
-        "refund_to_cash": "$%s Depozyt zapłacony gotówką",
-        "you_earned": "Zarobiłeś $%s"
+        "paid_with_cash": "Depozyt %s$ zapłacony gotówką",
+        "paid_with_bank": "Depozyt %s$ zapłacony z banku",
+        "refund_to_cash": "Depozyt %s$ zwrócony gotówką",
+        "you_earned": "Zarobiłeś %s$"
     },
     "menu": {
         "header": "Dostępne ciężarówki",
@@ -30,12 +30,11 @@
     "info": {
         "tow": "Umieść samochód z tyłu swojej ciężarówki",
         "toggle_npc": "Przełącz zadanie Npc",
-        "skick": "Attempted exploit abuse"
+        "skick": "Próba wykorzystania exploita"
     },
     "label": {
-        "payslip": "Payslip",
-        "vehicle": "Vehicle",
+        "payslip": "Pasek z wypłaty",
+        "vehicle": "Pojazd",
         "npcz": "NPCZone"
     }
 }
-
