@@ -306,7 +306,6 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                                 drawDropOff = true
                                 drawDropOffMarker()
                                 local vehNetID = NetworkGetNetworkIdFromEntity(targetVehicle)
-                                TriggerServerEvent('qb-tow:server:nano', vehNetID)
                                 --remove zone
                                 CurrentLocation.zoneCombo:remove()
                             end
