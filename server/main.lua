@@ -10,7 +10,6 @@ RegisterNetEvent('qb-tow:server:DoBail', function(bool, vehInfo)
         if not Bail[Player.PlayerData.citizenid] then return end
         Player.Functions.AddMoney('bank', Bail[Player.PlayerData.citizenid], "tow-bail-paid")
         Bail[Player.PlayerData.citizenid] = nil
-
         exports.qbx_core:Notify(source, locale("success.refund_to_cash", config.bailPrice), 'success')
         return
     end
@@ -28,7 +27,6 @@ RegisterNetEvent('qb-tow:server:DoBail', function(bool, vehInfo)
 
     Bail[Player.PlayerData.citizenid] = config.bailPrice
     Player.Functions.RemoveMoney(paymentMethod, config.bailPrice, "tow-paid-bail")
-
     exports.qbx_core:Notify(source, locale("success.paid_with_" .. paymentMethod, config.bailPrice), 'success')
     TriggerClientEvent('qb-tow:client:SpawnVehicle', source, vehInfo)
 end)
@@ -75,7 +73,6 @@ RegisterNetEvent('qb-tow:server:11101110', function(drops)
 
     Player.Functions.AddJobReputation(1)
     Player.Functions.AddMoney("bank", payment, "tow-salary")
-
     exports.qbx_core:Notify(source, locale("success.you_earned", payment), 'success')
 end)
 
