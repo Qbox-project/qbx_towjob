@@ -305,7 +305,6 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                                 SetBlipRouteColour(CurrentBlip2, 3)
                                 drawDropOff = true
                                 drawDropOffMarker()
-                                local vehNetID = NetworkGetNetworkIdFromEntity(targetVehicle)
                                 --remove zone
                                 CurrentLocation.zoneCombo:remove()
                             end
