@@ -31,25 +31,6 @@ RegisterNetEvent('qb-tow:server:DoBail', function(bool, vehInfo)
     TriggerClientEvent('qb-tow:client:SpawnVehicle', source, vehInfo)
 end)
 
-RegisterNetEvent('qb-tow:server:nano', function(vehNetID)
-    local Player = exports.qbx_core:GetPlayer(source)
-    local targetVehicle = NetworkGetEntityFromNetworkId(vehNetID)
-    if not Player then return end
-
-    local playerPed = GetPlayerPed(source)
-    local playerVehicle = GetVehiclePedIsIn(playerPed, true)
-    local playerVehicleCoords = GetEntityCoords(playerVehicle)
-    local targetVehicleCoords = GetEntityCoords(targetVehicle)
-    local dist = #(playerVehicleCoords - targetVehicleCoords)
-    if Player.PlayerData.job.name ~= "tow" or dist > 15.0 then
-        return DropPlayer(source, locale("info.skick"))
-    end
-
-    local chance = math.random(1, 100)
-    if chance >= 26 then return end
-    Player.Functions.AddItem("cryptostick", 1, false)
-end)
-
 RegisterNetEvent('qb-tow:server:11101110', function(drops)
     local Player = exports.qbx_core:GetPlayer(source)
     if not Player then return end
