@@ -12,7 +12,7 @@
         "paid_with_cash": "$%s Depôt payé avec l'argent",
         "paid_with_bank": "$%s Depôt payé avec la banque",
         "refund_to_cash": "$%s Depôt payé avec l'argent",
-        "you_earned": "You Earned $%s"
+        "you_earned": "Vous avez gagné $%s"
     },
     "menu": {
         "header": "Dépaneuses disponibles",
