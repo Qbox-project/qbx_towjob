@@ -1,0 +1,40 @@
+{
+  "error": {
+    "finish_work": "Önce tüm işlerini bitir",
+    "vehicle_not_correct": "Bu doğru araç değil",
+    "failed": "Başarısız oldun",
+    "not_towing_vehicle": "Bu işlemi yapabilmek için çekici aracın içinde olmalısın",
+    "too_far_away": "Çok uzaktasın",
+    "no_work_done": "Henüz hiçbir iş yapmadın",
+    "no_deposit": "$%s Depozito gerekli"
+  },
+  "success": {
+    "paid_with_cash": "$%s Depozito nakit ödendi",
+    "paid_with_bank": "$%s Depozito bankadan ödendi",
+    "refund_to_cash": "$%s Depozito nakit olarak iade edildi",
+    "you_earned": "$%s kazandın"
+  },
+  "menu": {
+    "header": "Mevcut Kamyonlar",
+    "close_menu": "⬅ Menüyü Kapat"
+  },
+  "mission": {
+    "delivered_vehicle": "Bir aracı teslim ettin",
+    "get_new_vehicle": "Yeni bir araç alınabilir",
+    "towing_vehicle": "Aracı kaldırıyorsun...",
+    "goto_depot": "Aracı Hayes Deposu'na götür",
+    "vehicle_towed": "Araç çekildi",
+    "untowing_vehicle": "Aracı indiriyorsun...",
+    "vehicle_takenoff": "Araç indirildi"
+  },
+  "info": {
+    "tow": "Düz kamyonunun arkasına bir aracı yerleştir",
+    "toggle_npc": "NPC işini aç/kapa",
+    "skick": "Exploit kötüye kullanım girişimi"
+  },
+  "label": {
+    "payslip": "Maaş Bordrosu",
+    "vehicle": "Araç",
+    "npcz": "NPC Bölgesi"
+  }
+}
