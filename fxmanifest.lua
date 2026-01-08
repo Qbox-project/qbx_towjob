@@ -3,7 +3,10 @@ game 'gta5'
 
 description 'QBX_TowJob'
 repository 'https://github.com/Qbox-project/qbx_towjob'
-version '1.0.0'
+version '1.1.0'
+dependencies {
+  'lenix_jobcenter'
+}
 
 ox_lib 'locale'
 

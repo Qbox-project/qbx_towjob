@@ -12,8 +12,76 @@ local showMarker = false
 local CurrentBlip2 = nil
 local CurrentTow = nil
 local drawDropOff = false
+local npcVehicleEntityId
 
 -- Functions
+
+local function givePlayerRep()
+    TriggerServerEvent('qbx_tow:server:givePlayerRep')
+end
+
+local function playAnimation(veh)
+    assert(type(veh) == 'number', 'something went wrong with playAnimation()\'s paramater')
+    for i = 1, GetNumberOfVehicleDoors(veh) do
+        SetVehicleDoorOpen(veh, i, false, false)
+    end
+    if lib.progressBar({
+        duration = 13000,
+        label = 'Searching the car',
+        useWhileDead = false,
+        canCancel = true,
+        disable = {
+            car = true,
+            sprint = true,
+            combat = true,
+        },
+        anim = {
+            dict = 'missexile3',
+            clip = 'ex03_dingy_search_case_a_michael'
+        },
+    }) then
+        exports.qbx_core:Notify('Now head to your tow and deliver this car', "info")
+        for i = 1, GetNumberOfVehicleDoors(veh) do
+            SetVehicleDoorShut(veh, i, false)
+        end
+        return true
+    else
+        exports.qbx_core:Notify('You have canceld searching', "error")
+        for i = 1, GetNumberOfVehicleDoors(veh) do
+            SetVehicleDoorShut(veh, i, false)
+        end
+        return false
+    end
+end
+
+local function claimItems()
+    TriggerServerEvent('qbx_tow:server:claimItems')
+end
+
+local function claimVehicleItems(veh)
+    assert(type(veh) == 'number', 'something went wrong with claimVehicleItems()\'s paramater')
+    npcVehicleEntityId = veh
+    if playAnimation(veh) then
+        claimItems()
+        exports.ox_target:removeLocalEntity(veh, 'vehicleToTow')
+        npcVehicleEntityId = nil
+    end
+end
+
+local function createVehicleTarget(veh)
+    assert(type(veh) == 'number', 'something went wrong with createVehicleTarget()\'s paramater')
+    exports.ox_target:addLocalEntity(veh, {
+        {
+            name = 'vehicleToTow',
+            icon = 'fa-solid fa-circle',
+            label = 'Search the car',
+            distance = 1.0,
+            onSelect = function()
+                claimVehicleItems(veh)
+            end,
+        }
+    })
+end
 
 local function getRandomVehicleLocation()
     local randomVehicle = math.random(1, #sharedConfig.locations["towspots"])
@@ -31,12 +99,6 @@ local function drawDropOffMarker()
             Wait(0)
         end
     end)
-end
-
-local function getVehicleInDirection(coordFrom, coordTo)
-	local rayHandle = CastRayPointToPoint(coordFrom.x, coordFrom.y, coordFrom.z, coordTo.x, coordTo.y, coordTo.z, 10, cache.ped, 0)
-	local _, _, _, _, vehicle = GetRaycastResult(rayHandle)
-	return vehicle
 end
 
 local function isTowVehicle(vehicle)
@@ -99,7 +161,7 @@ local function CreateZone(type, number)
         coords = sharedConfig.locations[type][number].coords.xyz
         heading = sharedConfig.locations["towspots"][number].coords.w --[[@as number?]]
         boxName = sharedConfig.locations["towspots"][number].name
-        size = vec3(50, 50, 10)
+        size = vec3(150, 150, 10)
     end
 
     if config.useTarget and type == "main" then
@@ -167,6 +229,8 @@ local function deliverVehicle(vehicle)
     SetBlipColour(CurrentBlip, 3)
     SetBlipRoute(CurrentBlip, true)
     SetBlipRouteColour(CurrentBlip, 3)
+    givePlayerRep()
+    if npcVehicleEntityId ~= nil then exports.ox_target:removeLocalEntity(vehicle, 'vehicleToTow') end
 end
 
 local function CreateElements()
@@ -192,6 +256,21 @@ local function CreateElements()
 
     CreateZone("main")
     CreateZone("vehicle")
+end
+
+local function getNearestVehicle()
+    local playerCoords = GetEntityCoords(cache.ped)
+    local playerVehicle = GetVehiclePedIsIn(cache.ped, false) -- Your current vehicle
+    local vehicles = GetGamePool('CVehicle')
+    
+    for _, vehicle in pairs(vehicles) do
+        if DoesEntityExist(vehicle) and vehicle ~= playerVehicle --[[ skip the vehicle you're in ]] then
+            if #(playerCoords - GetEntityCoords(vehicle)) < 10.0 then
+                return vehicle
+            end
+        end
+    end
+    return 0
 end
 -- Events
 
@@ -263,11 +342,9 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
     local vehicle = cache.vehicle
     if isTowVehicle(vehicle) then
         if not CurrentTow then
-            local coordA = GetEntityCoords(cache.ped)
-            local coordB = GetOffsetFromEntityInWorldCoords(cache.ped, 0.0, -30.0, 0.0)
-            local targetVehicle = getVehicleInDirection(coordA, coordB)
-
-            if NpcOn and CurrentLocation then
+            local targetVehicle = getNearestVehicle()
+            if targetVehicle == 0 then exports.qbx_core:Notify('Get closer to the vehicle', 'error') return end
+            if NpcOn and CurrentLocation and targetVehicle ~= 0 then
                 if GetEntityModel(targetVehicle) ~= joaat(CurrentLocation.model) then
                     exports.qbx_core:Notify(locale("error.vehicle_not_correct"), "error")
                     return
@@ -339,6 +416,8 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                     local targetPos = GetEntityCoords(CurrentTow)
                     if #(targetPos - vector3(sharedConfig.locations["vehicle"].coords.x, sharedConfig.locations["vehicle"].coords.y, sharedConfig.locations["vehicle"].coords.z)) < 25.0 then
                         deliverVehicle(CurrentTow)
+                    else
+                        exports.qbx_core:Notify('You have not delivered the vehicle', 'error')
                     end
                 end
                 RemoveBlip(CurrentBlip2)
@@ -399,6 +478,7 @@ RegisterNetEvent('qb-tow:client:SpawnNPCVehicle', function()
     local veh = NetToVeh(netId)
     SetVehicleFuelLevel(veh, 0.0)
     VehicleSpawned = true
+    createVehicleTarget(veh)
 end)
 
 RegisterNetEvent('qb-tow:client:ShowMarker', function(active)
