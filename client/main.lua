@@ -339,6 +339,8 @@ RegisterNetEvent('qb-tow:client:TowVehicle', function()
                     local targetPos = GetEntityCoords(CurrentTow)
                     if #(targetPos - vector3(sharedConfig.locations["vehicle"].coords.x, sharedConfig.locations["vehicle"].coords.y, sharedConfig.locations["vehicle"].coords.z)) < 25.0 then
                         deliverVehicle(CurrentTow)
+                    else
+                        exports.qbx_core:Notify(locale("error.too_far_away"), 'error')
                     end
                 end
                 RemoveBlip(CurrentBlip2)
