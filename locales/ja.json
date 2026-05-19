@@ -1,0 +1,40 @@
+{
+    "error": {
+        "finish_work": "先に全ての作業を完了してください",
+        "vehicle_not_correct": "正しい車両ではありません",
+        "failed": "失敗しました",
+        "not_towing_vehicle": "レッカー車に乗っている必要があります",
+        "too_far_away": "離れすぎています",
+        "no_work_done": "まだ作業を行っていません",
+        "no_deposit": "$%s のデポジットが必要です"
+    },
+    "success": {
+        "paid_with_cash": "$%s デポジットを現金で支払いました",
+        "paid_with_bank": "$%s デポジットを銀行から支払いました",
+        "refund_to_cash": "$%s デポジットを現金で返金しました",
+        "you_earned": "$%s を獲得しました"
+    },
+    "menu": {
+        "header": "利用可能なトラック",
+        "close_menu": "⬅ メニューを閉じる"
+    },
+    "mission": {
+        "delivered_vehicle": "車両を納車しました",
+        "get_new_vehicle": "新しい車両を引き取ることができます",
+        "towing_vehicle": "車両を吊り上げ中...",
+        "goto_depot": "ヘイズデポに車両を持っていく",
+        "vehicle_towed": "車両をレッカーしました",
+        "untowing_vehicle": "車両を取り外す",
+        "vehicle_takenoff": "車両を取り外しました"
+    },
+    "info": {
+        "tow": "フラットベッドの後ろに車を乗せる",
+        "toggle_npc": "NPCジョブの切り替え",
+        "skick": "不正行為が試みられました"
+    },
+    "label": {
+        "payslip": "給与明細",
+        "vehicle": "車両",
+        "npcz": "NPCゾーン"
+    }
+}
