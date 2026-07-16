@@ -148,7 +148,9 @@ local function CreateZone(type, number)
 end
 
 local function deliverVehicle(vehicle)
-    DeleteVehicle(vehicle)
+    local completed = lib.callback.await('qb-tow:server:completeTow', false, VehToNet(vehicle))
+    if not completed then return end
+
     RemoveBlip(CurrentBlip2)
     JobsDone += 1
     VehicleSpawned = false
@@ -385,7 +387,7 @@ end)
 RegisterNetEvent('qb-tow:client:PaySlip', function()
     if JobsDone > 0 then
         RemoveBlip(CurrentBlip)
-        TriggerServerEvent("qb-tow:server:11101110", JobsDone)
+        TriggerServerEvent('qb-tow:server:11101110')
         JobsDone = 0
         NpcOn = false
     else
