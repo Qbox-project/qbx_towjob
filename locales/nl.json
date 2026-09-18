@@ -1,0 +1,40 @@
+{
+    "error": {
+        "finish_work": "Maak eerst al je werk af",
+        "vehicle_not_correct": "Dit is niet het juiste voertuig",
+        "failed": "Je hebt gefaald",
+        "not_towing_vehicle": "Je moet in je sleepvoertuig zitten",
+        "too_far_away": "Je bent te ver weg",
+        "no_work_done": "Je hebt nog geen werk gedaan",
+        "no_deposit": "$%s aanbetaling vereist"
+    },
+    "success": {
+        "paid_with_cash": "$%s aanbetaling contant betaald",
+        "paid_with_bank": "$%s aanbetaling betaald via bank",
+        "refund_to_cash": "$%s aanbetaling contant terugbetaald",
+        "you_earned": "Je hebt $%s verdiend"
+    },
+    "menu": {
+        "header": "Beschikbare vrachtwagens",
+        "close_menu": "⬅ Sluit menu"
+    },
+    "mission": {
+        "delivered_vehicle": "Je hebt een voertuig afgeleverd",
+        "get_new_vehicle": "Er kan een nieuw voertuig worden opgehaald",
+        "towing_vehicle": "Voertuig ophijsen...",
+        "goto_depot": "Breng het voertuig naar het Hayes-depot",
+        "vehicle_towed": "Voertuig gesleept",
+        "untowing_vehicle": "Voertuig losmaken",
+        "vehicle_takenoff": "Voertuig weggehaald"
+    },
+    "info": {
+        "tow": "Plaats een auto achter op je dieplader",
+        "toggle_npc": "NPC-taak in-/uitschakelen",
+        "skick": "Poging tot misbruik van een exploit"
+    },
+    "label": {
+        "payslip": "Loonstrook",
+        "vehicle": "Voertuig",
+        "npcz": "NPC-zone"
+    }
+}
