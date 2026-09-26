@@ -202,6 +202,7 @@ RegisterNetEvent('qb-tow:client:SpawnVehicle', function()
     local coords = sharedConfig.locations["vehicle"].coords
     local plate = "TOWR"..lib.string.random('1111')
     local netId = lib.callback.await('qb-tow:server:spawnVehicle', false, vehicleInfo, coords, true)
+    if not netId then return end
     local timeout = 100
     while not NetworkDoesEntityExistWithNetworkId(netId) and timeout > 0 do
         Wait(10)
@@ -398,6 +399,7 @@ end)
 RegisterNetEvent('qb-tow:client:SpawnNPCVehicle', function()
     if VehicleSpawned then return end
     local netId = lib.callback.await('qb-tow:server:spawnVehicle', false, CurrentLocation.model, vec3(CurrentLocation.x, CurrentLocation.y, CurrentLocation.z))
+    if not netId then return end
     local veh = NetToVeh(netId)
     SetVehicleFuelLevel(veh, 0.0)
     VehicleSpawned = true

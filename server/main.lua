@@ -1,8 +1,11 @@
 local config = require 'config.server'
+local clientConfig = require 'config.client'
 local sharedConfig = require 'config.shared'
 local Bail = {}
 local activeJobs = {}
 local completedJobs = {}
+local activeTrucks = {}
+local spawning = {}
 
 local function isTowDriver(player)
     return player and player.PlayerData.job.name == 'tow'
@@ -10,8 +13,8 @@ end
 
 local function isAllowedTowTruck(model)
     if type(model) ~= 'string' then return false end
-    for i = 1, #config.allowedVehicleModels do
-        if model:lower() == config.allowedVehicleModels[i]:lower() then return true end
+    for allowed in pairs(clientConfig.vehicles) do
+        if model:lower() == allowed:lower() then return true end
     end
     return false
 end
@@ -47,6 +50,9 @@ RegisterNetEvent('qb-tow:server:DoBail', function(takeBail, vehInfo)
         if not Bail[citizenid] then return end
         player.Functions.AddMoney('bank', Bail[citizenid], 'tow-bail-paid')
         Bail[citizenid] = nil
+        local truck = activeTrucks[citizenid]
+        if truck and DoesEntityExist(truck) then DeleteEntity(truck) end
+        activeTrucks[citizenid] = nil
         TriggerClientEvent('ox_lib:notify', src, {
             id = 'bail_pay',
             title = 'Job Payment',
@@ -138,13 +144,26 @@ end)
 lib.callback.register('qb-tow:server:spawnVehicle', function(source, model, coords, warp)
     local player = exports.qbx_core:GetPlayer(source)
     local spawnCoords = getCoords(coords)
-    if not isTowDriver(player) or not spawnCoords then return end
+    if not isTowDriver(player) or not spawnCoords or spawning[source] then return end
 
     if warp then
         if warp ~= true or not Bail[player.PlayerData.citizenid] or not isAllowedTowTruck(model) then return end
         if #(spawnCoords - sharedConfig.locations.vehicle.coords.xyz) > 5.0 then return end
+        if #(GetEntityCoords(GetPlayerPed(source)) - sharedConfig.locations.vehicle.coords.xyz) > 8.0 then return end
+        local citizenid = player.PlayerData.citizenid
+        local truck = activeTrucks[citizenid]
+        if truck and DoesEntityExist(truck) then return end
 
-        local netId = qbx.spawnVehicle({model = model, spawnSource = sharedConfig.locations.vehicle.coords, warp = GetPlayerPed(source)})
+        spawning[source] = true
+        local success, netId, vehicle = pcall(qbx.spawnVehicle, {model = model, spawnSource = sharedConfig.locations.vehicle.coords, warp = GetPlayerPed(source)})
+        spawning[source] = nil
+        if not success or not netId or not vehicle or vehicle == 0 then return end
+        local currentPlayer = exports.qbx_core:GetPlayer(source)
+        if not Bail[citizenid] or not currentPlayer or currentPlayer.PlayerData.citizenid ~= citizenid then
+            DeleteEntity(vehicle)
+            return
+        end
+        activeTrucks[citizenid] = vehicle
         return netId
     end
 
@@ -157,8 +176,15 @@ lib.callback.register('qb-tow:server:spawnVehicle', function(source, model, coor
     local towspotIndex, towspot = getTowspot(model, spawnCoords)
     if not towspot or #(GetEntityCoords(GetPlayerPed(source)) - towspot.coords) > 60.0 then return end
 
-    local netId, vehicle = qbx.spawnVehicle({model = towspot.model, spawnSource = towspot.coords})
-    if not netId or netId == 0 or not vehicle or vehicle == 0 then return end
+    spawning[source] = true
+    local success, netId, vehicle = pcall(qbx.spawnVehicle, {model = towspot.model, spawnSource = towspot.coords})
+    spawning[source] = nil
+    if not success or not netId or netId == 0 or not vehicle or vehicle == 0 then return end
+    local currentPlayer = exports.qbx_core:GetPlayer(source)
+    if not currentPlayer or currentPlayer.PlayerData.citizenid ~= player.PlayerData.citizenid then
+        DeleteEntity(vehicle)
+        return
+    end
 
     local tripDistance = #(towspot.coords - sharedConfig.locations.dropoff.coords)
     activeJobs[source] = {
@@ -175,14 +201,14 @@ lib.callback.register('qb-tow:server:completeTow', function(source, netId)
     local player = exports.qbx_core:GetPlayer(source)
     local job = activeJobs[source]
     if not isTowDriver(player) or not job or math.type(netId) ~= 'integer' or netId ~= job.netId then return false end
-    if os.time() < job.earliestCompletion then return false end
+    if os.time() < job.earliestCompletion or os.time() > job.expiresAt then return false end
 
     local vehicle = NetworkGetEntityFromNetworkId(netId)
     local ped = GetPlayerPed(source)
     if not DoesEntityExist(vehicle) or ped == 0 then return false end
     if GetEntityModel(vehicle) ~= joaat(job.model) then return false end
-    if #(GetEntityCoords(vehicle) - sharedConfig.locations.dropoff.coords) > 25.0 then return false end
-    if #(GetEntityCoords(ped) - sharedConfig.locations.dropoff.coords) > 30.0 then return false end
+    if #(GetEntityCoords(vehicle) - sharedConfig.locations.vehicle.coords.xyz) > 25.0 then return false end
+    if #(GetEntityCoords(ped) - sharedConfig.locations.vehicle.coords.xyz) > 40.0 then return false end
 
     activeJobs[source] = nil
     completedJobs[source] = (completedJobs[source] or 0) + 1
